@@ -1,0 +1,10 @@
+setup.py
+BDDTools/DataBaseEngine.py
+BDDTools/DbTools.py
+BDDTools/DetectTypePostgres.py
+BDDTools/Ingestion.py
+BDDTools/__init__.py
+BDDTools.egg-info/PKG-INFO
+BDDTools.egg-info/SOURCES.txt
+BDDTools.egg-info/dependency_links.txt
+BDDTools.egg-info/top_level.txt
