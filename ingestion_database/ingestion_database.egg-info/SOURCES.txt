@@ -1,0 +1,10 @@
+setup.py
+ingestion_database/DayliCsvLauncher.py
+ingestion_database/__init__.py
+ingestion_database.egg-info/PKG-INFO
+ingestion_database.egg-info/SOURCES.txt
+ingestion_database.egg-info/dependency_links.txt
+ingestion_database.egg-info/top_level.txt
+ingestion_database/ingest_transactions/CleaningBeforeInsert.py
+ingestion_database/ingest_transactions/__init__.py
+ingestion_database/ingest_transactions/csv_transactions.py
