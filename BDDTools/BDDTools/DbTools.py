@@ -46,8 +46,7 @@ def DeleteRows(engine,TlbName,Schema):
 
     """
     querydelete = "Delete From " + '"' + Schema + '"' + "."  + '"' + TlbName + '"'
-    connection = engine.connect()
-    connection.execute(querydelete)
+    engine.execute(querydelete)
 
 def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
     """Insert a pandas DataFrame into a database table
@@ -86,9 +85,8 @@ def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
 
     if engine is None:
         try:
-            PostgresConnect = ConnectToPostgres(user=credentials["user"], pwd=credentials["pwd"])
-            PostgresConnect = PostgresConnect.CreateEngine()
-            engine = PostgresConnect._openConnection
+            PostgresConnect = ConnectToPostgres(credentials)
+            engine = PostgresConnect.CreateEngine()
             _was_engine = False
         except:
             raise
@@ -176,9 +174,8 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     if engine is None:
         try:
-            PostgresConnect = ConnectToPostgres(user=credentials["user"], pwd=credentials["pwd"])
-            PostgresConnect = PostgresConnect.CreateEngine()
-            engine = PostgresConnect._openConnection
+            PostgresConnect = ConnectToPostgres(credentials)
+            engine = PostgresConnect.CreateEngine()
             _was_engine = False
         except:
             raise
@@ -255,9 +252,7 @@ def CreateTable(engine, TlbName, schema, TableParameter):
         i = i + 1
 
 
-    connection = engine.connect()
-    connection.execute(CreateQuery)
-    connection.close()
+    engine.execute(CreateQuery)
 
 
 def  TableCharacteristics(TlbName, schema, engine):
@@ -287,7 +282,5 @@ def CreateSchema(engine, Schema):
             CREATE SCHEMA "{}"
             """.format(Schema)
 
-    connection = engine.connect()
-    connection.execute(Query)
-    connection.close()
+    engine.execute(Query)
 

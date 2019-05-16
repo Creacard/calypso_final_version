@@ -50,9 +50,8 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
     SizeChunck      = kwargs.get('SizeChunck', 10000)
     NumWorkers      = kwargs.get('NumWorkers', 3)
 
-    PostgresConnect = ConnectToPostgres(user=credentials["user"], pwd=credentials["pwd"])
-    PostgresConnect = PostgresConnect.CreateEngine()
-    engine = PostgresConnect._openConnection
+    PostgresConnect = ConnectToPostgres(credentials)
+    engine = PostgresConnect.CreateEngine()
 
     # Test if the targeted schema exists
     try:
@@ -181,10 +180,8 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
     SizeChunck           = kwargs.get('SizeChunck', 10000)
     NumWorkers           = kwargs.get('NumWorkers', 3)
 
-    PostgresConnect = ConnectToPostgres(user=credentials["user"], pwd=credentials["pwd"])
-    PostgresConnect = PostgresConnect.CreateEngine()
-    engine = PostgresConnect._openConnection
-
+    PostgresConnect = ConnectToPostgres(credentials)
+    engine = PostgresConnect.CreateEngine()
 
     # Test if the targeted schema exists
     if isinstance(Schema, str):

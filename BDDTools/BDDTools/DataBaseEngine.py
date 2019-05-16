@@ -23,16 +23,8 @@ class ConnectToPostgres(object):
 
         Parameters
         -----------
-        user : str
-            User name for database credentials
-        pwd : str
-            Password for database connection
-        hostname: str
-            IP address of host name of the database
-        port : str
-            open port to connect to the database
-        database : str
-            Database name
+        credentials : dictionnary
+            User credentials for the connection of the database
 
         Returns
         -----------
@@ -45,48 +37,31 @@ class ConnectToPostgres(object):
     _pwd            = None
     _hostname       = None
     _database       = None
-    _engine         = None
-    _openConnection = None
 
-    def __init__(self, user=None, pwd=None, hostname=None, port=None, database=None):
-        self._user     = user
-        self._pwd      = pwd
-        self._hostname = ""
-        self._port     = ""
-        self._database = ""
+    def __init__(self, credentials):
+        self._user     = credentials["user"]
+        self._pwd      = credentials["pwd"]
 
     def CreateEngine(self, **kwargs):
 
-        Echo   = kwargs.get('Echo')
-        logger = kwargs.get('logger')
-
-        if Echo is None:
-            Echo = False
-        else:
-            if ~isinstance(Echo, bool):
-                if logger is not None:
-                    logger.error("The optional argmument 'Echo' is not a boolean", exc_info=True)
-                    exit()
-                else:
-                    exit()
-            else:
-                pass
-
-        database_conn = postres_creacard_config()
-        self._hostname = database_conn["hostname"]
-        self._port = database_conn["port"]
-        self._database = database_conn["database"]
-
-        con = "postgresql://" + self._user + ":" + self._pwd + "@" + self._hostname + ":" + self._port + "/" + self._database
-        self._engine = create_engine(con, echo=Echo)
+        self.Echo = kwargs.get('Echo', False)
 
         try:
-            self._openConnection = self._engine.connect()
+            assert isinstance(self.Echo, bool)
+        except ValueError:
+                print("Echo must be a boolean")
+
+        try:
+
+            database_conn = postres_creacard_config()
+            self._hostname = database_conn["hostname"]
+            self._port = database_conn["port"]
+            self._database = database_conn["database"]
+
+            con = "postgresql://" + self._user + ":" + self._pwd + "@" + self._hostname + ":" + self._port + "/" + self._database
+            _engine = create_engine(con, echo=self.Echo)
+
         except Exception as e:
-            if logger is not None:
-                logger.error(e, exc_info=True)
-            else:
-                print(e)
+            print("An error occurred : {}".format(e))
 
-        return self
-
+        return _engine.connect()
