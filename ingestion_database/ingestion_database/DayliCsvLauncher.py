@@ -1,5 +1,5 @@
 from Utils import LogErrorFromInsert
-from ingestion_database.ingest_transactions import csv_transactions
+from ingest_transactions import csv_transactions
 
 credentials = dict()
 credentials["user"] = "justin"
