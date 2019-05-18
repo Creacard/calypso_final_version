@@ -9,7 +9,7 @@ from BDDTools import DbTools as db
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 import multiprocessing
-from Utils.SplitData import splitDataFrameIntoSmaller
+from Utils import splitDataFrameIntoSmaller
 from BDDTools.DetectTypePostgres import CreateDictionnaryType
 from sqlalchemy import *
 from BDDTools.DataBaseEngine import ConnectToPostgres
