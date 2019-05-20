@@ -11,6 +11,7 @@ import time
 def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
 
     logger = kwargs.get('logger')
+    workers = kwargs.get('workers', 3)
 
     # Create the dictionnary in order to insure you
     # that at each ingestion of .csv file
@@ -85,7 +86,7 @@ def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
 
     # Function for preprocessing the data before the ingestion
     # This is a dictionnary that takes in arguments
-    # - function to preprocessing the data (output dataframe)
+    # - function to preprocess the data (output dataframe)
     # - KeysWords of optinal argument for the function
     FinalKeywords = dict(function=CleaningBeforeInsert.cleaning_before, KeyWords=None)
 
@@ -99,7 +100,7 @@ def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
         # Ingestion part
         Ingestion.FromCsvToDataBase(ListFinal, credentials, Schema, TlbName=TlbNameMonth, logger=logger,
                                     TableDict=TableParameter, InsertInTheSameTable=True,
-                                    InsertInParrell=True, PreprocessingCsv=FinalKeywords)
+                                    InsertInParrell=True, PreprocessingCsv=FinalKeywords, NumWorkers=workers)
 
     toc = time.time() - tic
 
