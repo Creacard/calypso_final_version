@@ -8,10 +8,14 @@
 from sqlalchemy import create_engine
 import json
 import os
+import sys
 
 def postres_creacard_config():
 
-    folder_json = os.environ['HOME'] + "/conf_python/database_connection.json"
+    if sys.platform == "win32":
+        folder_json = os.path.expanduser['~'] + "\\conf_python\\database_connection.json"
+    else:
+        folder_json = os.environ['HOME'] + "/conf_python/database_connection.json"
     with open(folder_json, 'r') as JSON:
         con = json.load(JSON)
 
