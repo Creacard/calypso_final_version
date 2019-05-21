@@ -7,10 +7,11 @@
 
 from sqlalchemy import create_engine
 import json
+import os
 
 def postres_creacard_config():
 
-    folder_json = "/Users/justinvalet/CreacardProject/Configurations/database_connection.json"
+    folder_json = os.environ['HOME'] + "/conf_python/database_connection.json"
     with open(folder_json, 'r') as JSON:
         con = json.load(JSON)
 
