@@ -80,6 +80,41 @@ def cleaning_before(Data,FilePath):
         # Reorder variables in order to always insure the order of variables when ingesting
         Data = Data[sorted(Data.columns)]
 
+        col = ['Amount',
+               'AuthNum',
+               'CardHolderID',
+               'CardNumber',
+               'CardProductName',
+               'CardType',
+               'CardVPUType',
+               'Currency',
+               'CurrencyCode',
+               'DebitCredit',
+               'Description',
+               'DistributorCode',
+               'Fee',
+               'LastName',
+               'MCC',
+               'MerchantAddress',
+               'MerchantCity',
+               'MerchantCountry',
+               'MerchantID',
+               'MerchantName',
+               'ProgramName',
+               'PurseCurrency',
+               'Rate',
+               'RemainingBalance',
+               'Surcharge',
+               'SweepCurrency',
+               'TermState',
+               'TransactionDB/CR',
+               'TransactionID',
+               'TransactionResult',
+               'TransactionTP',
+               'TransactionTime']
+
+        Data = Data.loc[:, col]
+
     else:
         Data = None
 

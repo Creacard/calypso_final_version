@@ -16,3 +16,4 @@ logger = LogErrorFromInsert.CreateLogger("DayliTransaction", "Ingestion_", '/Use
 Folder = "/Users/justinvalet/CreacardProject/Data/TestIngestion/"
 
 csv_transactions.ingest_csv_transactions(credentials, "test_ingestion", Folder, logger=logger)
+
