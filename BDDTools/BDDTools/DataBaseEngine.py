@@ -42,10 +42,12 @@ class ConnectToPostgres(object):
     _pwd            = None
     _hostname       = None
     _database       = None
+    _port           = None
 
-    def __init__(self, credentials):
+    def __init__(self, credentials, **kwargs):
         self._user     = credentials["user"]
         self._pwd      = credentials["pwd"]
+        self._use_conf = kwargs.get('use_conf', None)
 
     def CreateEngine(self, **kwargs):
 
@@ -58,10 +60,15 @@ class ConnectToPostgres(object):
 
         try:
 
-            database_conn = postres_creacard_config()
-            self._hostname = database_conn["hostname"]
-            self._port = database_conn["port"]
-            self._database = database_conn["database"]
+            if self._use_conf is None:
+                database_conn = postres_creacard_config()
+                self._hostname = database_conn["hostname"]
+                self._port = database_conn["port"]
+                self._database = database_conn["database"]
+            else:
+                self._hostname = self._use_conf["hostname"]
+                self._port = self._use_conf["port"]
+                self._database = self._use_conf["database"]
 
             con = "postgresql://" + self._user + ":" + self._pwd + "@" + self._hostname + ":" + self._port + "/" + self._database
             _engine = create_engine(con, echo=self.Echo)
