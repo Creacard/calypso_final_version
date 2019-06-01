@@ -81,6 +81,7 @@ def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
     TableDict       = kwargs.get('TableDict', None)
     credentials     = kwargs.get('credentials', None)
 
+
     _was_engine = True
 
     if engine is None:
@@ -172,6 +173,8 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     _was_engine = True
 
+    _num_lines_csv = None
+
     if engine is None:
         try:
             PostgresConnect = ConnectToPostgres(credentials)
@@ -187,13 +190,16 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
                 if PreprocessingCsv['KeyWords'] is not None:
                     Data = pd.read_csv(FilePath)
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
+                    _num_lines_csv = Data.shape[0]
                 else:
                     Data = pd.read_csv(FilePath)
                     Data = F(Data, FilePath)
+                    _num_lines_csv = Data.shape[0]
                 InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=False, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
             else:
                 Data = pd.read_csv(FilePath)
+                _num_lines_csv = Data.shape[0]
                 InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=False, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
         else:
@@ -205,13 +211,16 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
                 if PreprocessingCsv['KeyWords'] is not None:
                     Data = pd.read_csv(FilePath)
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
+                    _num_lines_csv = Data.shape[0]
                 else:
                     Data = pd.read_csv(FilePath)
                     Data = F(Data, FilePath)
+                    _num_lines_csv = Data.shape[0]
                 InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=True, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
             else:
                 Data = pd.read_csv(FilePath)
+                _num_lines_csv = Data.shape[0]
                 InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=True, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
     except Exception as e:
@@ -222,6 +231,10 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     if not _was_engine:
         engine.close()
+
+    _outputs = [FilePath, _num_lines_csv]
+
+    return _outputs
 
 def CreateTable(engine, TlbName, schema, TableParameter):
 
@@ -279,7 +292,7 @@ def IsSchemaExist(engine, Schema):
 def CreateSchema(engine, Schema):
 
     Query = """
-            CREATE SCHEMA "{}"
+            CREATE SCHEMA IF NOT EXISTS {};
             """.format(Schema)
 
     engine.execute(Query)

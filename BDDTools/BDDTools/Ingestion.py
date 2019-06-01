@@ -217,17 +217,20 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
                 NbWorkers = NumWorkers
             print(".csv simultaneous ingestion of {} files using {} Workers is launched".format(len(ListOfPath), NbWorkers))
 
+            _lines_file = []
             tic = time.time()
             p = ThreadPool(NbWorkers)
-            p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger, SizeChunck=SizeChunck,
-                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True, credentials=credentials), ListOfPath)
+            _lines_file.append(p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger, SizeChunck=SizeChunck,
+                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True, credentials=credentials), ListOfPath))
             toc = time.time() - tic
             print(".csv files were succesfully ingested in parallel into the table {} in {} seconds".format(TlbName, toc))
 
         else:
+            _lines_file = []
             tic = time.time()
             for i in ListOfPath:
-                db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema,SizeChunck=SizeChunck, PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True)
+                _lines_file.append(db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema,SizeChunck=SizeChunck,
+                                                    PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True))
                 print("{} was succesfully ingested".format(i))
             toc = time.time() - tic
             print(".csv files were succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
@@ -247,26 +250,27 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
                 NbWorkers = NumWorkers
             print(".csv simultaneous ingestion of {} files using {} Workers is launched".format(len(ListOfPath),
                                                                                                 NbWorkers))
-
+            _lines_file = []
             tic = time.time()
             p = ThreadPool(NbWorkers)
-            p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger,
+            _lines_file.append(p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger,
                           SizeChunck=SizeChunck,
-                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False, credentials=credentials), ListOfPath)
+                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False, credentials=credentials), ListOfPath))
             toc = time.time() - tic
             print(
                 ".csv files were succesfully ingested in parallel into the table {} in {} seconds".format(TlbName, toc))
 
         else:
+            _lines_file = []
             tic = time.time()
             for i in ListOfPath:
-                db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema, SizeChunck=SizeChunck,
-                                 PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False)
+                _lines_file.append(db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema, SizeChunck=SizeChunck,
+                                 PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False))
                 print("{} was succesfully ingested".format(i))
             toc = time.time() - tic
             print(".csv files were succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
 
         engine.close()
 
-    return
+    return _lines_file
 
