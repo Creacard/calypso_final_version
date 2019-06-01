@@ -12,7 +12,7 @@ def ExcludedRegex(NumRow, DataRegex, engine, TlbName, schema):
         "SOUS_UNIVERS" = '{}'
         WHERE "MCC" IN ('{}') AND 
         "MerchantName" ~* '{}' 
-        """.format(TlbName,schema,str(DataRegex.loc[NumRow, "UNIVERS_DATABASE"].encode('ascii', 'ignore')),
+        """.format(schema, TlbName, str(DataRegex.loc[NumRow, "UNIVERS_DATABASE"].encode('ascii', 'ignore')),
                    str(DataRegex.loc[NumRow, "SOUS_UNIVERS_DATABASE"].encode('ascii', 'ignore')),
                    DataRegex.loc[NumRow, "MCC_DATABASE"].encode('ascii', 'ignore').replace("'", "''"),
                    DataRegex.loc[NumRow, "REGEX"].encode('ascii', 'ignore').replace("'", "''"))
@@ -27,7 +27,7 @@ def IncludedRegex(NumRow, DataRegex, engine, TlbName, schema):
         SET "UNIVERS" = '{}', 
         "SOUS_UNIVERS" = '{}'
         WHERE "UNIVERS" = '' and "SOUS_UNIVERS" = '' and "MerchantName" ~* '{}' 
-        """.format(TlbName, schema, str(DataRegex.loc[NumRow, "UNIVERS_DATABASE"].encode('ascii', 'ignore')),
+        """.format(schema, TlbName, str(DataRegex.loc[NumRow, "UNIVERS_DATABASE"].encode('ascii', 'ignore')),
                    str(DataRegex.loc[NumRow, "SOUS_UNIVERS_DATABASE"].encode('ascii', 'ignore')),
                    DataRegex.loc[NumRow, "REGEX"].encode('ascii', 'ignore').replace("'", "''"))
 
