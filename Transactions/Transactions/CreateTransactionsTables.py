@@ -1,17 +1,17 @@
 
-def construct_transaction_tables(engine,ListDate):
+def construct_transaction_tables(engine,ListDate, schema):
 
 
     # Drop table before
     query_d = """
-    DROP TABLE IF EXISTS "TRANSACTIONS"."POS_TRANSACTIONS"
-    """
+    DROP TABLE IF EXISTS "{}"."POS_TRANSACTIONS"
+    """.format(schema)
 
     engine.execute(query_d)
 
     QueryFinal = """
-    Create table "TRANSACTIONS"."POS_TRANSACTIONS"  as 
-    """
+    Create table "{}"."POS_TRANSACTIONS"  as 
+    """.format(schema)
 
     for i in range(0, len(ListDate)):
 
@@ -61,24 +61,24 @@ def construct_transaction_tables(engine,ListDate):
 
     Query_index = """
         CREATE INDEX "MCC_index"
-        ON "TRANSACTIONS"."POS_TRANSACTIONS" USING btree
+        ON "{}"."POS_TRANSACTIONS" USING btree
         ("MCC" bpchar_pattern_ops ASC NULLS LAST)
         TABLESPACE pg_default;
-    """
+    """.format(schema)
     engine.execute(Query_index)
 
     # ATM
 
     query_d = """
-    DROP TABLE IF EXISTS "TRANSACTIONS"."ATM_TRANSACTIONS"
-    """
+    DROP TABLE IF EXISTS "{}"."ATM_TRANSACTIONS"
+    """.format(schema)
 
     engine.execute(query_d)
 
     QueryFinal = """
-    Create table "TRANSACTIONS"."ATM_TRANSACTIONS"  as 
+    Create table "{}"."ATM_TRANSACTIONS"  as 
     
-    """
+    """.format(schema)
 
     for i in range(0, len(ListDate)):
 
@@ -125,15 +125,15 @@ def construct_transaction_tables(engine,ListDate):
     # Others debit transactions
 
     query_d = """
-    DROP TABLE IF EXISTS "TRANSACTIONS"."OTHER_TRANSACTIONS"
-    """
+    DROP TABLE IF EXISTS "{}"."OTHER_TRANSACTIONS"
+    """.format(schema)
 
     engine.execute(query_d)
 
     QueryFinal = """
-    Create table "TRANSACTIONS"."OTHER_TRANSACTIONS"  as 
+    Create table "{}"."OTHER_TRANSACTIONS"  as 
     
-    """
+    """.format(schema)
 
     for i in range(0, len(ListDate)):
 
@@ -182,9 +182,9 @@ def construct_transaction_tables(engine,ListDate):
 
 
     QueryFinal = """
-    Create table "TRANSACTIONS"."FEES_TRANSACTIONS"  as 
+    Create table "{}"."FEES_TRANSACTIONS"  as 
     
-    """
+    """.format(schema)
 
     for i in range(0, len(ListDate)):
 
@@ -235,16 +235,16 @@ def construct_transaction_tables(engine,ListDate):
     # Loads
 
     query_d = """
-    DROP TABLE IF EXISTS "TRANSACTIONS"."LOADS_TRANSACTIONS"
-    """
+    DROP TABLE IF EXISTS "{}"."LOADS_TRANSACTIONS"
+    """.format(schema)
 
     engine.execute(query_d)
 
 
     QueryFinal = """
-    Create table "TRANSACTIONS"."LOADS_TRANSACTIONS"  as 
+    Create table "{}"."LOADS_TRANSACTIONS"  as 
     
-    """
+    """.format(schema)
 
     for i in range(0, len(ListDate)):
 
