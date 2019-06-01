@@ -14,7 +14,7 @@ def create_update_dictionnaries_categorisation(credentials):
 
     # Conf files location
     if sys.platform == "win32":
-        Folder = os.path.expanduser['~'] + "\\conf_python\\categorisation_univers\\"
+        Folder = os.path.expanduser('~') + "\\conf_python\\categorisation_univers\\"
     else:
         Folder = os.environ['HOME'] + "/conf_python/categorisation_univers/"
 
