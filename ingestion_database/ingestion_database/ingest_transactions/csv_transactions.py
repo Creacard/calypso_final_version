@@ -92,16 +92,21 @@ def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
 
     # iterate on each month in order to create / ingest
     # .csv dayli files into the associated monthly table
+    _output_ingestion = dict()
     for k in range(0, len(ListToIterate)):
         ListFinal = list(ListOfFile["FileName"][(ListOfFile.Month == int(ListToIterate[k].split('_')[1])) & (
                     ListOfFile.Year == int(ListToIterate[k].split('_')[0]))])
         # Name of the table
         TlbNameMonth = "MONTHLY_TRANSACTIONS_" + ListToIterate[k].split('_')[0] + ListToIterate[k].split('_')[1]
         # Ingestion part
-        Ingestion.FromCsvToDataBase(ListFinal, credentials, Schema, TlbName=TlbNameMonth, logger=logger,
+        output_tmp = Ingestion.FromCsvToDataBase(ListFinal, credentials, Schema, TlbName=TlbNameMonth, logger=logger,
                                     TableDict=TableParameter, InsertInTheSameTable=True,
                                     InsertInParrell=True, PreprocessingCsv=FinalKeywords, NumWorkers=workers)
+
+        _output_ingestion[str(ListToIterate[k])] = output_tmp
 
     toc = time.time() - tic
 
     print("The ingestion was done in {} seconds".format(toc))
+
+    return _output_ingestion
