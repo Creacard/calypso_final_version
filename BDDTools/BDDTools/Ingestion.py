@@ -49,9 +49,14 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
     DropTable       = kwargs.get('DropTable', False)
     SizeChunck      = kwargs.get('SizeChunck', 10000)
     NumWorkers      = kwargs.get('NumWorkers', 3)
+    engine = kwargs.get('engine', None)
 
-    PostgresConnect = ConnectToPostgres(credentials)
-    engine = PostgresConnect.CreateEngine()
+    if engine is None:
+        try:
+            PostgresConnect = ConnectToPostgres(credentials)
+            engine = PostgresConnect.CreateEngine()
+        except:
+            raise
 
     # Test if the targeted schema exists
     try:
