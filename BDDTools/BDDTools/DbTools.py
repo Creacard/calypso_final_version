@@ -236,7 +236,10 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     return _outputs
 
-def CreateTable(engine, TlbName, schema, TableParameter):
+def CreateTable(engine, TlbName, schema, TableParameter, **kwargs):
+
+
+    _keep_order = kwargs.get('keep_order', False)
 
     CreateQuery = """
         CREATE TABLE "{}"."{}" (
@@ -244,26 +247,46 @@ def CreateTable(engine, TlbName, schema, TableParameter):
 
     """.format(schema, TlbName)
 
-    i = 1
-    for var, keys in sorted(TableParameter.iteritems()):
-        if i == len(TableParameter):
-            AddColumns = """
+    if _keep_order:
+        i = 1
+        for var, keys in TableParameter.iteritems():
+            if i == len(TableParameter):
+                AddColumns = """
 
-                "{}" {} );
+                    "{}" {} );
 
-                """.format(var, keys)
+                    """.format(var, keys)
 
-            CreateQuery = CreateQuery + AddColumns
-        else:
-            AddColumns = """
+                CreateQuery = CreateQuery + AddColumns
+            else:
+                AddColumns = """
 
-                "{}" {} ,
+                    "{}" {} ,
 
-                """.format(var, keys)
+                    """.format(var, keys)
 
-            CreateQuery = CreateQuery + AddColumns
-        i = i + 1
+                CreateQuery = CreateQuery + AddColumns
+            i = i + 1
+    else:
+        i = 1
+        for var, keys in sorted(TableParameter.iteritems()):
+            if i == len(TableParameter):
+                AddColumns = """
+    
+                    "{}" {} );
+    
+                    """.format(var, keys)
 
+                CreateQuery = CreateQuery + AddColumns
+            else:
+                AddColumns = """
+    
+                    "{}" {} ,
+    
+                    """.format(var, keys)
+
+                CreateQuery = CreateQuery + AddColumns
+            i = i + 1
 
     engine.execute(CreateQuery)
 

@@ -1,4 +1,5 @@
 import pandas as pd
+from collections import OrderedDict
 
 def CreateDictionnaryType(Data):
 
@@ -51,3 +52,25 @@ def CreateDictionnaryType(Data):
     DataTypes = DataTypes["Type"]
 
     return DataTypes
+
+
+def create_dictionnary_type_from_table(engine, TlbName):
+    get_dictionnary_type = """
+    SELECT "column_name", "data_type", "character_maximum_length"
+    FROM "information_schema"."columns" WHERE 
+    table_name = '{}'
+    """.format(TlbName)
+
+    columns_type = pd.read_sql(get_dictionnary_type, con=engine)
+
+    for i in range(0, len(columns_type)):
+        if columns_type.iloc[i, 1] == "character varying":
+            columns_type.iloc[i, 1] = "VARCHAR" + "(" + str(int(columns_type.iloc[i, 2])) + ")"
+
+    columns_type = columns_type.drop(columns="character_maximum_length", axis=1)
+    columns_type = columns_type.set_index("column_name")
+    columns_type_dict = columns_type["data_type"].to_dict(into=OrderedDict)
+
+    del columns_type
+
+    return columns_type_dict
