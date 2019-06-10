@@ -24,3 +24,12 @@ def compute_min_max_date(StartYear,StartMonth,EndYear,EndMonth):
     max_date = str(DRange.max())[0:10]
 
     return min_date, max_date
+
+
+def ComputePeriodVectorDay(StartYear,StartMonth,StartDay,EndYear,EndMonth,EndDay):
+
+    start = datetime.datetime(StartYear, StartMonth, StartDay)
+    end = datetime.datetime(EndYear, EndMonth, EndDay)
+    DRange = pd.date_range(str(StartYear) + "-" + str(StartMonth) + "-" + str(StartDay), periods=round((end - start).days)+1, freq='D')
+
+    return DRange
