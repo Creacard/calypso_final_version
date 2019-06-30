@@ -12,6 +12,7 @@ def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
 
     logger = kwargs.get('logger')
     workers = kwargs.get('workers', 3)
+    _file_date_condition = kwargs.get('file_date_condition', None)
 
     # Create the dictionnary in order to insure you
     # that at each ingestion of .csv file
@@ -80,6 +81,21 @@ def ingest_csv_transactions(credentials, Schema, Folder, **kwargs):
 
     ListOfFile["Year"] = ListOfFile.FileTimeDelta.dt.year
     ListOfFile["Month"] = ListOfFile.FileTimeDelta.dt.month
+
+    if _file_date_condition is not None:
+        if len(_file_date_condition) == 2:
+            ListOfFile = ListOfFile[
+                (ListOfFile.loc[:, "FileTimeDelta"] >= datetime.datetime(_file_date_condition["start"][0],
+                                                                         _file_date_condition["start"][1],
+                                                                         _file_date_condition["start"][2]))
+                & (ListOfFile.loc[:, "FileTimeDelta"] <= datetime.datetime(_file_date_condition["end"][0],
+                                                                           _file_date_condition["end"][1],
+                                                                           _file_date_condition["end"][2]))]
+        else:
+            ListOfFile = ListOfFile[
+                (ListOfFile.loc[:, "FileTimeDelta"] >= datetime.datetime(_file_date_condition["start"][0],
+                                                                         _file_date_condition["start"][1],
+                                                                         _file_date_condition["start"][2]))]
 
     tic = time.time()
     ListToIterate = list(np.unique(ListOfFile.Year.astype(str) + "_" + ListOfFile.Month.astype(str)))
