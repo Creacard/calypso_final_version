@@ -315,7 +315,7 @@ def IsSchemaExist(engine, Schema):
 def CreateSchema(engine, Schema):
 
     Query = """
-            CREATE SCHEMA IF NOT EXISTS {};
+            CREATE SCHEMA IF NOT EXISTS "{}";
             """.format(Schema)
 
     engine.execute(Query)
