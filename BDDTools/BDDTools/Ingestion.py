@@ -117,7 +117,7 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
             NbWorkers = NumWorkers
         # Split the data into different chunck size
         DataSplitted = splitDataFrameIntoSmaller(Data, chunkSize=SizeParrell)
-        print("Launch multi-insertion of sample {} rows on {} Workers".format(NbWorkers,SizeParrell))
+        print("Launch multi-insertion of sample {} rows on {} Workers".format(SizeParrell,NbWorkers))
 
         tic = time.time()
         p = ThreadPool(NbWorkers)
