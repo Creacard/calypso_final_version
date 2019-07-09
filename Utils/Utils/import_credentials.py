@@ -71,7 +71,7 @@ def extract_connection_type():
 
     connection_type = list()
     for json_file in ListOfFile:
-        json_file = json_file.split("_")[1].replace(".json","")
+        json_file = json_file.split("_")[1].replace(".json", "")
         connection_type.append(json_file)
 
     return connection_type
