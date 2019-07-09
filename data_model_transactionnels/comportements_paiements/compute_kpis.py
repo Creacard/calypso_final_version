@@ -78,7 +78,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
     _tmp = pd.read_sql(_query_atm_monthly, con=engine)
     print("Query done in {} seconds".format(time.time() - tic))
 
-    _final_set = pd.merge(_final_set,_tmp,on='CardHolderID',how='left')
+    _final_set = pd.merge(_final_set, _tmp, on='CardHolderID', how='left')
     _final_set = _final_set.fillna(0)
 
     # compute LOAD KPI's
@@ -235,14 +235,14 @@ def compute_kpis_transactions(engine, start_date, end_date):
     print("Query done in {} seconds".format(time.time() - tic))
 
 
-    _final_set = pd.merge(_final_set,_tmp,on='CardHolderID',how='left')
+    _final_set = pd.merge(_final_set, _tmp, on='CardHolderID', how='left')
     _final_set = _final_set.fillna(0)
 
 
     # Compute part of ATM, POS and OTHER
-    _final_set["atm_part"] = np.divide(_final_set["sum_amount_atm"],(_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
-    _final_set["pos_part"] = np.divide(_final_set["sum_amount_pos"],(_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
-    _final_set["other_part"] = np.divide(_final_set["sum_amount_other"],(_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
+    _final_set["atm_part"] = np.divide(_final_set["sum_amount_atm"], (_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
+    _final_set["pos_part"] = np.divide(_final_set["sum_amount_pos"], (_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
+    _final_set["other_part"] = np.divide(_final_set["sum_amount_other"], (_final_set["sum_amount_atm"]+_final_set["sum_amount_pos"]+_final_set["sum_amount_other"]))
 
     _final_set = _final_set.fillna(0)
     _final_set = _final_set.replace([np.inf, -np.inf], 0)
