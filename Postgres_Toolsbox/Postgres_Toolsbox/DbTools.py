@@ -8,8 +8,10 @@
 
 from sqlalchemy import *
 import pandas as pd
-from BDDTools.DetectTypePostgres import CreateDictionnaryType
-from BDDTools.DataBaseEngine import ConnectToPostgres
+from Postgres_Toolsbox.DetectTypePostgres import CreateDictionnaryType
+from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from Creacard_Utils.read_with_protocole import read_csv_protocole
+
 
 def table_exists(engine, TlbName, schema):
     """Check if a table exist
@@ -48,7 +50,7 @@ def DeleteRows(engine,TlbName,Schema):
     querydelete = "Delete From " + '"' + Schema + '"' + "."  + '"' + TlbName + '"'
     engine.execute(querydelete)
 
-def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
+def InsertToPostgre(Data, TlbName, schema, engine,  **kwargs):
     """Insert a pandas DataFrame into a database table
 
         Requiered Parameters
@@ -79,15 +81,19 @@ def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
     DropTable       = kwargs.get('TableDict', False)
     SizeChunck      = kwargs.get('SizeChunck', None)
     TableDict       = kwargs.get('TableDict', None)
-    credentials     = kwargs.get('credentials', None)
+    _use_credentials     = kwargs.get('_use_credentials', None)
+    _use_conf = kwargs.get('_use_conf', None)
+    database_type = kwargs.get('database_type', None)
+    database_name = kwargs.get('database_name', None)
 
 
     _was_engine = True
 
     if engine is None:
         try:
-            PostgresConnect = ConnectToPostgres(credentials)
-            engine = PostgresConnect.CreateEngine()
+            engine = connect_to_database(database_type, database_name,
+                                                  _use_credentials=_use_credentials,
+                                                  _use_conf=_use_conf).CreateEngine()
             _was_engine = False
         except:
             raise
@@ -147,7 +153,7 @@ def InsterToPostgre(Data, engine, TlbName, schema, **kwargs):
     if not _was_engine:
         engine.close()
 
-def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSameTable=None,PreprocessingCsv=None,**kwargs):
+def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
     """Insert a csv using pandas into a database table
 
         Parameters
@@ -169,7 +175,15 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     """
 
-    credentials = kwargs.get('credentials', None)
+    InsertInTheSameTable = kwargs.get('InsertInTheSameTable', None)
+    PreprocessingCsv = kwargs.get('PreprocessingCsv', None)
+    _use_credentials = kwargs.get('_use_credentials', None)
+    _use_conf = kwargs.get('_use_conf', None)
+    engine = kwargs.get('use_engine', None)
+    logger = kwargs.get('logger', None)
+    SizeChunck = kwargs.get('SizeChunck', None)
+    database_type = kwargs.get('database_type', None)
+    database_name = kwargs.get('database_name', None)
 
     _was_engine = True
 
@@ -177,8 +191,9 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
 
     if engine is None:
         try:
-            PostgresConnect = ConnectToPostgres(credentials)
-            engine = PostgresConnect.CreateEngine()
+            engine = connect_to_database(database_type, database_name,
+                                         _use_credentials=_use_credentials,
+                                         _use_conf=_use_conf).CreateEngine()
             _was_engine = False
         except:
             raise
@@ -188,19 +203,42 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
             if PreprocessingCsv is not None:
                 F = PreprocessingCsv['function']
                 if PreprocessingCsv['KeyWords'] is not None:
-                    Data = pd.read_csv(FilePath)
+
+                    # read the data from a specific protocole
+                    Data = read_csv_protocole(ingestion_params["protocole_type"],
+                                       ingestion_params["protocole_name"],
+                                       FilePath, ingestion_params["csv_params"])
+
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
                     _num_lines_csv = Data.shape[0]
                 else:
-                    Data = pd.read_csv(FilePath)
+
+                    # read the data from a specific protocole
+                    Data = read_csv_protocole(ingestion_params["protocole_type"],
+                                              ingestion_params["protocole_name"],
+                                              FilePath, ingestion_params["csv_params"])
+
                     Data = F(Data, FilePath)
                     _num_lines_csv = Data.shape[0]
-                InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=False, SizeChunck=SizeChunck)
+                    InsertToPostgre(Data,
+                                TlbName=TlbName,
+                                engine=engine,
+                                schema=Schema,
+                                DropTable=False, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
             else:
-                Data = pd.read_csv(FilePath)
+
+                # read the data from a specific protocole
+                Data = read_csv_protocole(ingestion_params["protocole_type"],
+                                          ingestion_params["protocole_name"],
+                                          FilePath, ingestion_params["csv_params"])
+
                 _num_lines_csv = Data.shape[0]
-                InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=False, SizeChunck=SizeChunck)
+                InsertToPostgre(Data,
+                                TlbName=TlbName,
+                                engine=engine,
+                                schema=Schema,
+                                DropTable=False, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
         else:
 
@@ -209,19 +247,33 @@ def CsvToDataBase(FilePath,engine,TlbName,Schema,logger,SizeChunck,InsertInTheSa
             if PreprocessingCsv is not None:
                 F = PreprocessingCsv['function']
                 if PreprocessingCsv['KeyWords'] is not None:
-                    Data = pd.read_csv(FilePath)
+
+                    # read the data from a specific protocole
+                    Data = read_csv_protocole(ingestion_params["protocole_type"],
+                                              ingestion_params["protocole_name"],
+                                              FilePath, ingestion_params["csv_params"])
+
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
                     _num_lines_csv = Data.shape[0]
                 else:
-                    Data = pd.read_csv(FilePath)
+
+                    # read the data from a specific protocole
+                    Data = read_csv_protocole(ingestion_params["protocole_type"],
+                                              ingestion_params["protocole_name"],
+                                              FilePath, ingestion_params["csv_params"])
+
                     Data = F(Data, FilePath)
                     _num_lines_csv = Data.shape[0]
-                InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=True, SizeChunck=SizeChunck)
+                    InsertToPostgre(Data,
+                                TlbName=TlbName,
+                                engine=engine,
+                                schema=Schema,
+                                DropTable=True, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
             else:
                 Data = pd.read_csv(FilePath)
                 _num_lines_csv = Data.shape[0]
-                InsterToPostgre(Data, engine, TlbName, schema=Schema, DropTable=True, SizeChunck=SizeChunck)
+                InsertToPostgre(Data, engine, TlbName, schema=Schema, DropTable=True, SizeChunck=SizeChunck)
                 print("file {} was succesfully inserted".format(FilePath))
     except Exception as e:
         if logger is not None:

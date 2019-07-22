@@ -5,18 +5,18 @@
 #
 
 import time
-from BDDTools import DbTools as db
+from Postgres_Toolsbox import DbTools as db
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 import multiprocessing
-from Utils.SplitData import splitDataFrameIntoSmaller
-from BDDTools.DetectTypePostgres import CreateDictionnaryType
+from Creacard_Utils.SplitData import splitDataFrameIntoSmaller
+from Postgres_Toolsbox.DetectTypePostgres import CreateDictionnaryType
 from sqlalchemy import *
-from BDDTools.DataBaseEngine import ConnectToPostgres
+from creacard_connectors.creacard_connectors.database_connector import connect_to_database
 
 """ Ingestion for sparse pandas DataFrame """
 
-def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
+def InsertTableIntoDatabase(Data, TlbName, Schema, database_type, database_name, **kwargs):
     """Insert a pandas Dataframe
         Requiered Parameters
         -----------
@@ -49,12 +49,15 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
     DropTable       = kwargs.get('DropTable', False)
     SizeChunck      = kwargs.get('SizeChunck', 10000)
     NumWorkers      = kwargs.get('NumWorkers', 3)
-    engine = kwargs.get('engine', None)
+    _use_credentials     = kwargs.get('credentials', None)
+    _use_conf = kwargs.get('credentials', None)
+    engine = kwargs.get('use_engine', None)
 
     if engine is None:
         try:
-            PostgresConnect = ConnectToPostgres(credentials)
-            engine = PostgresConnect.CreateEngine()
+            engine = connect_to_database(database_type, database_name,
+                                                  _use_credentials=_use_credentials,
+                                                  _use_conf=_use_conf).CreateEngine()
         except:
             raise
 
@@ -121,7 +124,15 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
 
         tic = time.time()
         p = ThreadPool(NbWorkers)
-        p.map(partial(db.InsterToPostgre, engine=None, TlbName=TlbName, schema=Schema, DropTable=False, credentials=credentials), DataSplitted)
+        p.map(partial(db.InsertToPostgre,
+                      engine=None,
+                      TlbName=TlbName,
+                      schema=Schema,
+                      DropTable=False,
+                      database_type=database_type,
+                      database_name=database_name,
+                      _use_credentials=_use_credentials,
+                      _use_conf=_use_conf), DataSplitted)
         p.close()
         p.join()
         toc = time.time() - tic
@@ -129,7 +140,12 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
 
     else:
         tic = time.time()
-        db.InsterToPostgre(Data, engine=engine, TlbName=TlbName, schema=Schema, DropTable=False, SizeChunck=SizeChunck)
+        db.InsertToPostgre(Data,
+                           engine=engine,
+                           TlbName=TlbName,
+                           schema=Schema,
+                           DropTable=False,
+                           SizeChunck=SizeChunck)
         toc = time.time() - tic
         print("The DataFrame was succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
 
@@ -140,7 +156,8 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, credentials, **kwargs):
 
 """ Ingestion for multiple .csv files with the same structure i.e number of columns  """
 
-def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
+def FromCsvToDataBase(ListOfPath, database_type,database_name, Schema, ingestion_params, **kwargs):
+
     """Insert all .csv from a folder
 
         Requiered Parameters
@@ -184,14 +201,17 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
     TableDict            = kwargs.get('TableDict', None)
     SizeChunck           = kwargs.get('SizeChunck', 10000)
     NumWorkers           = kwargs.get('NumWorkers', 3)
+    _use_credentials     = kwargs.get('_use_credentials', None)
+    _use_conf = kwargs.get('_use_conf', None)
 
-    PostgresConnect = ConnectToPostgres(credentials)
-    engine = PostgresConnect.CreateEngine()
+    engine = connect_to_database(database_type, database_name,
+                                 _use_credentials=_use_credentials,
+                                 _use_conf=_use_conf).CreateEngine()
 
     # Test if the targeted schema exists
     if isinstance(Schema, str):
         if ~db.IsSchemaExist(engine, Schema):
-            db.CreateSchema(engine, schema)
+            db.CreateSchema(engine, Schema)
 
     if InsertInTheSameTable is not None:
         if TableDict is not None:
@@ -225,8 +245,16 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
             _lines_file = []
             tic = time.time()
             p = ThreadPool(NbWorkers)
-            _lines_file.append(p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger, SizeChunck=SizeChunck,
-                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True, credentials=credentials), ListOfPath))
+            _lines_file.append(p.map(partial(db.CsvToDataBase,
+                                             TlbName=TlbName,
+                                             Schema=Schema,
+                                             ingestion_params=ingestion_params,
+                                             logger=logger,
+                                             SizeChunck=SizeChunck,
+                                             PreprocessingCsv=PreprocessingCsv,
+                                             InsertInTheSameTable=True,
+                                             database_type=database_type,
+                                             database_name=database_name), ListOfPath))
             toc = time.time() - tic
             print(".csv files were succesfully ingested in parallel into the table {} in {} seconds".format(TlbName, toc))
 
@@ -234,8 +262,16 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
             _lines_file = []
             tic = time.time()
             for i in ListOfPath:
-                _lines_file.append(db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema,SizeChunck=SizeChunck,
-                                                    PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=True))
+                _lines_file.append(db.CsvToDataBase(i,
+                                                    TlbName=TlbName,
+                                                    Schema=Schema,
+                                                    SizeChunck=SizeChunck,
+                                                    database_type=database_type,
+                                                    database_name=database_name,
+                                                    ingestion_params=ingestion_params,
+                                                    PreprocessingCsv=PreprocessingCsv,
+                                                    use_engine = engine,
+                                                    InsertInTheSameTable=True))
                 print("{} was succesfully ingested".format(i))
             toc = time.time() - tic
             print(".csv files were succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
@@ -258,9 +294,17 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
             _lines_file = []
             tic = time.time()
             p = ThreadPool(NbWorkers)
-            _lines_file.append(p.map(partial(db.CsvToDataBase, engine=None, TlbName=TlbName, Schema=Schema, logger=logger,
-                          SizeChunck=SizeChunck,
-                          PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False, credentials=credentials), ListOfPath))
+            _lines_file.append(p.map(partial(db.CsvToDataBase,
+                                             TlbName=TlbName,
+                                             Schema=Schema,
+                                             logger=logger,
+                                             SizeChunck=SizeChunck,
+                                             ingestion_params=ingestion_params,
+                                             PreprocessingCsv=PreprocessingCsv,
+                                             InsertInTheSameTable=False,
+                                             database_type=database_type,
+                                             database_name=database_name,
+                                             use_engine=None), ListOfPath))
             toc = time.time() - tic
             print(
                 ".csv files were succesfully ingested in parallel into the table {} in {} seconds".format(TlbName, toc))
@@ -269,8 +313,16 @@ def FromCsvToDataBase(ListOfPath, credentials, Schema, **kwargs):
             _lines_file = []
             tic = time.time()
             for i in ListOfPath:
-                _lines_file.append(db.CsvToDataBase(i, engine=engine, TlbName=TlbName, Schema=Schema, SizeChunck=SizeChunck,
-                                 PreprocessingCsv=PreprocessingCsv, InsertInTheSameTable=False))
+                _lines_file.append(db.CsvToDataBase(i,
+                                                    TlbName=TlbName,
+                                                    Schema=Schema,
+                                                    SizeChunck=SizeChunck,
+                                                    PreprocessingCsv=PreprocessingCsv,
+                                                    ingestion_params=ingestion_params,
+                                                    use_engine=engine,
+                                                    database_type=database_type,
+                                                    database_name=database_name,
+                                                    InsertInTheSameTable=False))
                 print("{} was succesfully ingested".format(i))
             toc = time.time() - tic
             print(".csv files were succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
