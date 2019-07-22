@@ -4,8 +4,8 @@
 # Date: 15/1/2019
 
 
-from creacard_connectors.creacard_connectors.import_configurations import database_connection
-from creacard_connectors.creacard_connectors.construct_connector import construct_connection_to_database
+from creacard_connectors.import_configurations import database_connection
+from creacard_connectors.construct_connector import construct_connection_to_database
 from sqlalchemy import create_engine
 from Creacard_Utils.import_credentials import credentials_extractor
 

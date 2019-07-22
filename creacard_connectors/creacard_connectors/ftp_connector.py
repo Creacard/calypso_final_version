@@ -6,7 +6,7 @@ import os
 import json
 
 from Creacard_Utils.import_credentials import credentials_extractor
-from creacard_connectors.creacard_connectors.import_configurations import FTP_connection
+from creacard_connectors.import_configurations import FTP_connection
 
 
 class connect_to_FTP(object):
