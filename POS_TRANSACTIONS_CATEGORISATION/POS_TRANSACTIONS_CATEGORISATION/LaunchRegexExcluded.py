@@ -1,7 +1,7 @@
 
 import pandas as pd
 # Database connection
-from BDDTools.DataBaseEngine import ConnectToPostgres
+from creacard_connectors.creacard_connectors.database_connector import connect_to_database
 import time
 
 def ExcludedRegex(NumRow, DataRegex, engine, TlbName, schema):
@@ -36,10 +36,9 @@ def IncludedRegex(NumRow, DataRegex, engine, TlbName, schema):
 
 
 
-def fill_univers_sous_univers(credentials, schema, TlbName):
+def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
 
-    PostgresConnect = ConnectToPostgres(credentials)
-    engine = PostgresConnect.CreateEngine()
+    engine = connect_to_database(database_type, database_name).CreateEngine()
 
 
 

@@ -1,14 +1,13 @@
 import pandas as pd
-from BDDTools.DbTools import InsterToPostgre,CreateSchema
-from BDDTools.DataBaseEngine import ConnectToPostgres
+from Postgres_Toolsbox.DbTools import InsterToPostgre,CreateSchema
+from creacard_connectors.creacard_connectors.database_connector import connect_to_database
 import os
 import sys
 
-def create_update_dictionnaries_categorisation(credentials):
+def create_update_dictionnaries_categorisation(database_type,database_name):
 
 
-    PostgresConnect = ConnectToPostgres(credentials)
-    engine = PostgresConnect.CreateEngine()
+    engine = connect_to_database(database_type, database_name).CreateEngine()
 
     CreateSchema(engine, "REFERENTIEL")
 
