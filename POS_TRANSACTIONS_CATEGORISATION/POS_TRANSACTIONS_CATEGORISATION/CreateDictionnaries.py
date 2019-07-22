@@ -1,6 +1,6 @@
 import pandas as pd
-from Postgres_Toolsbox.DbTools import InsterToPostgre,CreateSchema
-from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from Postgres_Toolsbox.DbTools import InsertToPostgre,CreateSchema
+from creacard_connectors.database_connector import connect_to_database
 import os
 import sys
 
@@ -29,7 +29,7 @@ def create_update_dictionnaries_categorisation(database_type,database_name):
     TableParameter["SOUS_UNIVERS"]          = "VARCHAR (100)"
     TableParameter["DESCRIPTION"]           = "TEXT"
 
-    InsterToPostgre(DataDescritpion, engine, "UNIVERS_DESCRIPTION", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
+    InsertToPostgre(DataDescritpion, engine, "UNIVERS_DESCRIPTION", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
 
     del DataDescritpion
     del FileDescription
@@ -43,7 +43,7 @@ def create_update_dictionnaries_categorisation(database_type,database_name):
     TableParameter["MCC_CODE"] = "VARCHAR (20)"
     TableParameter["MCC"]      = "TEXT"
 
-    InsterToPostgre(DataFileMCC, engine, "MCC_CODE_LINK", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
+    InsertToPostgre(DataFileMCC, engine, "MCC_CODE_LINK", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
     del FileMCC
     del DataFileMCC
 
@@ -60,7 +60,7 @@ def create_update_dictionnaries_categorisation(database_type,database_name):
     TableParameter["MCC_CODE"]              = "VARCHAR (20)"
     TableParameter["NOTE"]                  = "INTEGER"
 
-    InsterToPostgre(DataMCCCat,engine, "MCC_CATEGORIES", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
+    InsertToPostgre(DataMCCCat,engine, "MCC_CATEGORIES", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
     del FileMCCCat
     del DataMCCCat
 
@@ -78,7 +78,7 @@ def create_update_dictionnaries_categorisation(database_type,database_name):
     TableParameter["NEW_REGEX"]        = "TEXT"
     TableParameter["MCC_CODE"]         = "VARCHAR (20)"
 
-    InsterToPostgre(Data1,engine, "REGEX_EXCLUDED", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
+    InsertToPostgre(Data1,engine, "REGEX_EXCLUDED", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
     del FileRegexExclu
     del Data1
 
@@ -105,7 +105,7 @@ def create_update_dictionnaries_categorisation(database_type,database_name):
     TableParameter["SOUS_UNIVERS"]     = "VARCHAR (100)"
     TableParameter["NEW_REGEX"]        = "TEXT"
 
-    InsterToPostgre(Data1, engine, "REGEX_INCLUDED", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
+    InsertToPostgre(Data1, engine, "REGEX_INCLUDED", "REFERENTIEL", DropTable=True, TableDict=TableParameter)
     del FileRegexExclu
     del Data1
 
