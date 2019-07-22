@@ -4,25 +4,12 @@
 # Date: 15/1/2019
 
 
-
+from creacard_connectors.creacard_connectors.import_configurations import database_connection
+from creacard_connectors.creacard_connectors.construct_connector import construct_connection_to_database
 from sqlalchemy import create_engine
-import json
-import os
-import sys
+from Creacard_Utils.import_credentials import credentials_extractor
 
-def postres_creacard_config():
-
-    if sys.platform == "win32":
-        folder_json = os.path.expanduser('~') + "\\conf_python\\database_connection.json"
-    else:
-        folder_json = os.environ['HOME'] + "/conf_python/database_connection.json"
-    with open(folder_json, 'r') as JSON:
-        con = json.load(JSON)
-
-    return con
-
-
-class ConnectToPostgres(object):
+class connect_to_database(object):
 
     """Create an sqlalchemy connection to the database
 
@@ -43,11 +30,15 @@ class ConnectToPostgres(object):
     _hostname       = None
     _database       = None
     _port           = None
+    _database_name  = None
+    _database_type = None
 
-    def __init__(self, credentials, **kwargs):
-        self._user     = credentials["user"]
-        self._pwd      = credentials["pwd"]
+    def __init__(self, database_type, database_name, **kwargs):
+
+        self._database_name = database_name
+        self._database_type = database_type
         self._use_conf = kwargs.get('use_conf', None)
+        self._use_credentials = kwargs.get('use_credentials', None)
 
     def CreateEngine(self, **kwargs):
 
@@ -61,7 +52,7 @@ class ConnectToPostgres(object):
         try:
 
             if self._use_conf is None:
-                database_conn = postres_creacard_config()
+                database_conn = database_connection(self._database_type, self._database_name)
                 self._hostname = database_conn["hostname"]
                 self._port = database_conn["port"]
                 self._database = database_conn["database"]
@@ -70,7 +61,19 @@ class ConnectToPostgres(object):
                 self._port = self._use_conf["port"]
                 self._database = self._use_conf["database"]
 
-            con = "postgresql://" + self._user + ":" + self._pwd + "@" + self._hostname + ":" + self._port + "/" + self._database
+            if self._use_credentials is None:
+                cred = credentials_extractor().get_database_credentials(self._database_type, self._database_name)
+                self._user = cred["user"]
+                self._pwd = cred["pwd"]
+
+            else:
+                self._user = self._use_credentials["user"]
+                self._pwd = self._use_credentials["pwd"]
+
+            _connector = construct_connection_to_database(self._database_type)
+
+
+            con = str(_connector) + self._user + ":" + self._pwd + "@" + self._hostname + ":" + self._port + "/" + self._database
             _engine = create_engine(con, echo=self.Echo)
 
         except Exception as e:
