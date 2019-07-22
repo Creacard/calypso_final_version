@@ -1,6 +1,6 @@
 import pandas as pd
 import time
-from BDDTools.Ingestion import InsertTableIntoDatabase
+from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 
 
 def ingestion_card_status(engine, FilePath):

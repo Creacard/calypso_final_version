@@ -77,6 +77,9 @@ def cleaning_before(Data,FilePath):
 
         Data["CardType"] = CardType
 
+        # Store the name of the file
+        Data["FileSource"] = str(FileName)
+
         # Reorder variables in order to always insure the order of variables when ingesting
         Data = Data[sorted(Data.columns)]
 
@@ -93,6 +96,7 @@ def cleaning_before(Data,FilePath):
                'Description',
                'DistributorCode',
                'Fee',
+               'FileSource',
                'LastName',
                'MCC',
                'MerchantAddress',
