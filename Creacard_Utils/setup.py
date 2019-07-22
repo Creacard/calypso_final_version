@@ -4,7 +4,7 @@ with open("requierements.txt") as f:
     requierements = f.read()
 
 setup(
-  name='Utils',
+  name='Creacard_Utils',
   version = '0.0.1',
   requierements= requierements,
   packages=find_packages(),
