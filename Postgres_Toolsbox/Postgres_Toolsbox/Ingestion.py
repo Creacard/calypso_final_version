@@ -12,7 +12,7 @@ import multiprocessing
 from Creacard_Utils.SplitData import splitDataFrameIntoSmaller
 from Postgres_Toolsbox.DetectTypePostgres import CreateDictionnaryType
 from sqlalchemy import *
-from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from creacard_connectors.database_connector import connect_to_database
 
 """ Ingestion for sparse pandas DataFrame """
 
