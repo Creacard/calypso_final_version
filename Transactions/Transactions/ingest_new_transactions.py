@@ -1,4 +1,4 @@
-from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from creacard_connectors.database_connector import connect_to_database
 import datetime
 import pandas as pd
 from Postgres_Toolsbox.DbTools import CreateTable
