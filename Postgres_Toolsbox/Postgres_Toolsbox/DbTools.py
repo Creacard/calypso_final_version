@@ -9,7 +9,7 @@
 from sqlalchemy import *
 import pandas as pd
 from Postgres_Toolsbox.DetectTypePostgres import CreateDictionnaryType
-from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from creacard_connectors.database_connector import connect_to_database
 from Creacard_Utils.read_with_protocole import read_csv_protocole
 
 
