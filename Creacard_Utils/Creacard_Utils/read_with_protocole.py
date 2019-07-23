@@ -1,4 +1,4 @@
-from creacard_connectors.creacard_connectors.ftp_connector import connect_to_FTP
+from creacard_connectors.ftp_connector import connect_to_FTP
 import pandas as pd
 import os
 import glob
