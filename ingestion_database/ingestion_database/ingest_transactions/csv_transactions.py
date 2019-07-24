@@ -130,7 +130,7 @@ def ingest_csv_transactions(database_type, database_name, Schema, Folder, ingest
 
     ListOfFile["Year"] = ListOfFile.FileTimeDelta.dt.year
     ListOfFile["Month"] = ListOfFile.FileTimeDelta.dt.month
-    ListOfFile["File"] = ListOfFile.FileTimeDelta.dt.month
+    ListOfFile["Day"] = ListOfFile.FileTimeDelta.dt.month
 
     if _file_date_condition is not None:
         if len(_file_date_condition) == 2:
