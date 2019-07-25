@@ -1,5 +1,5 @@
 
-def construct_transaction_tables(engine,ListDate, schema):
+def construct_transaction_tables(engine, ListDate, schema):
 
 
     # Drop table before
