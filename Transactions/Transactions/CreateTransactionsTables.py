@@ -19,10 +19,11 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                 CASE WHEN "TransactionTP" in ('POS International', 'POS International Reversal') then 1 
                 else 0
-                end as "IsPOSInternational", "TransactionTP","TransactionID",
+                end as "IsPOSInternational", "TransactionTP",
                 '' as "UNIVERS", '' as "SOUS_UNIVERS"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" IN ('POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal') 
@@ -40,10 +41,11 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                     SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                     SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                      CASE WHEN "TransactionTP" in ('POS International', 'POS International Reversal') then 1 
                      else 0
-                     end as "IsPOSInternational", "TransactionTP","TransactionID",
+                     end as "IsPOSInternational", "TransactionTP",
                      '' as "UNIVERS", '' as "SOUS_UNIVERS"
                      FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                      where "TransactionTP" IN ('POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal')
@@ -86,10 +88,11 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                 CASE WHEN "TransactionTP" in ('ATM International') then 1
                 else 0
-                end as "IsInternational", "TransactionTP","TransactionID"
+                end as "IsInternational", "TransactionTP"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" IN ('ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL') 
                 and "DebitCredit" IN ('Debit') 
@@ -106,10 +109,11 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                     CASE WHEN "TransactionTP" in ('ATM International') then 1
                     else 0
-                    end as "IsInternational", "TransactionTP","TransactionID"
+                    end as "IsInternational", "TransactionTP"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     where "TransactionTP" IN ('ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL') 
                     and "DebitCredit" IN ('Debit') 
@@ -141,7 +145,8 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                 'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
@@ -161,7 +166,8 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime"
+                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     where "TransactionTP" IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                    'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
@@ -192,7 +198,8 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" NOT IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                 'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
@@ -214,7 +221,8 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime"
+                    SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     where "TransactionTP" NOT IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                    'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
@@ -252,7 +260,8 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
     
@@ -267,7 +276,8 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime"
+                    SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
     

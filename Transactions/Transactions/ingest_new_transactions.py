@@ -35,7 +35,8 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
 
 
         query = """
-                        SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                        SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                        "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                         CASE WHEN "TransactionTP" in ('POS International', 'POS International Reversal') then 1 
                         else 0
                         end as "IsPOSInternational",
@@ -125,7 +126,8 @@ def add_new_atm_transactions(database_type, database_name, _year, _month, _day, 
 
         querytmp = """
 
-                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime",
+                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                     CASE WHEN "TransactionTP" in ('ATM International') then 1
                     else 0
                     end as "IsInternational"
@@ -171,7 +173,8 @@ def add_new_loads_transactions(database_type, database_name, _year, _month, _day
 
         querytmp = """
 
-                SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
                 and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
@@ -213,7 +216,8 @@ def add_new_others_transactions(database_type, database_name, _year, _month, _da
 
         querytmp = """
 
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                 'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
@@ -259,7 +263,8 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
 
         querytmp = """
 
-                SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime"
+                SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "TransactionTP" NOT IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
                 'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
