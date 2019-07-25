@@ -149,8 +149,6 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, database_type, database_name,
         toc = time.time() - tic
         print("The DataFrame was succesfully ingested into the table {} in {} seconds".format(TlbName, toc))
 
-    engine.close()
-
     return
 
 
