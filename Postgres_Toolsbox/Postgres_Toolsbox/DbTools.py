@@ -303,6 +303,7 @@ def CreateTable(engine, TlbName, schema, TableParameter, **kwargs):
         i = 1
         for var, keys in TableParameter.iteritems():
             if i == len(TableParameter):
+                ""
                 AddColumns = """
 
                     "{}" {} );
