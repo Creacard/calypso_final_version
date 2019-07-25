@@ -1,8 +1,9 @@
 
 import pandas as pd
 # Database connection
-from creacard_connectors.creacard_connectors.database_connector import connect_to_database
+from creacard_connectors.database_connector import connect_to_database
 import time
+from POS_TRANSACTIONS_CATEGORISATION.CreateDictionnaries import create_update_dictionnaries_categorisation
 
 def ExcludedRegex(NumRow, DataRegex, engine, TlbName, schema):
     # Step 2.2 looping update
@@ -37,6 +38,9 @@ def IncludedRegex(NumRow, DataRegex, engine, TlbName, schema):
 
 
 def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
+
+    # Refresh categorisation dictionnaries
+    create_update_dictionnaries_categorisation(database_type, database_name)
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -80,15 +84,6 @@ def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
     """
 
     DataRegex = pd.read_sql(query, con=engine)
-
-    # Step 2.2 looping update
-    #tic = time.time()
-    #p = ThreadPool(3)
-    #p.map(
-    #    partial(RegexExcluded.ExcludedRegex, DataRegex=DataRegex, engine=engine), range(0, len(DataRegex)))
-    #p.close()
-    #p.join()
-
 
     print("update of exclusion was done in {} seconds".format(time.time() - tic))
 

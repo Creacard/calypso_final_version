@@ -1,5 +1,5 @@
 import pandas as pd
-from Postgres_Toolsbox.DbTools import InsertToPostgre,CreateSchema
+from Postgres_Toolsbox.DbTools import InsertToPostgre, CreateSchema
 from creacard_connectors.database_connector import connect_to_database
 import os
 import sys
