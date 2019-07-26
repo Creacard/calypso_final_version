@@ -284,7 +284,7 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
     if not _was_engine:
         engine.close()
 
-    _outputs = [FilePath, _num_lines_csv]
+    _outputs = [FilePath.split("/")[-1], _num_lines_csv]
 
     return _outputs
 
