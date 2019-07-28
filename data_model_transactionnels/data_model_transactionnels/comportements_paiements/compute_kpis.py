@@ -1,7 +1,7 @@
 import pandas as pd
 import time
 import numpy as np
-from Utils.ManipulateDate import ComputePeriodVector,compute_min_max_date
+from Creacard_Utils.ManipulateDate import ComputePeriodVector,compute_min_max_date
 
 
 def compute_kpis_transactions(engine, start_date, end_date):

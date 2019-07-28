@@ -6,7 +6,7 @@
 
 import pandas as pd
 import numpy as np
-from Utils.ManipulateDate import ComputePeriodVector
+from Creacard_Utils.ManipulateDate import ComputePeriodVector
 
 
 def monthly_transactional_paiements(date_month, engine):
