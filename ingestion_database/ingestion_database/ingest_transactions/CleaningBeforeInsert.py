@@ -9,7 +9,7 @@ import datetime
 # an optional argument
 
 
-def cleaning_before(Data,FilePath):
+def cleaning_before(Data, FilePath):
 
     # Rename & Upper Case variables
     Data.columns = Data.columns.str.replace(" ", "")
