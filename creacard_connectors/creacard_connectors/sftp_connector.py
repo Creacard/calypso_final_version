@@ -112,9 +112,9 @@ def extract_SFTP_connection(_protocole_type,_protocole_name, _use_conf, _use_cre
 
     if _use_conf is None:
         _SFTP_connection = SFTP_connection(_protocole_type, _protocole_name)
-        _hostname = SFTP_connection["hostname"]
-        _port = SFTP_connection["port"]
-        _private_key = parse_private_key(SFTP_connection["private_key"])
+        _hostname = _SFTP_connection["hostname"]
+        _port = _SFTP_connection["port"]
+        _private_key = parse_private_key(_SFTP_connection["private_key"])
     else:
         _hostname = _use_conf["hostname"]
         _port = _use_conf["port"]
