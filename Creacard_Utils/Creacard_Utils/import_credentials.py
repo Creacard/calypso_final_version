@@ -46,6 +46,18 @@ class credentials_extractor(object):
 
         return con[protocole_type][connection_name]
 
+    def get_sftp_credentials(self, protocole_type, connection_name):
+
+        if sys.platform == "win32":
+            folder_json = os.path.expanduser('~') + "\\conf_python\\credentials_SFTP.json"
+        else:
+            folder_json = os.environ['HOME'] + "/conf_python/credentials_SFTP.json"
+
+        with open(folder_json, 'r') as JSON:
+            con = json.load(JSON)
+
+        return con[protocole_type][connection_name]
+
 
 def extract_connection_type():
     if sys.platform == "win32":
