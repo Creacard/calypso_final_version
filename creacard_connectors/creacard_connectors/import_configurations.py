@@ -24,3 +24,15 @@ def FTP_connection(protocole_type, protocole_name):
         con = json.load(JSON)
 
     return con[protocole_type][protocole_name]
+
+
+def SFTP_connection(protocole_type, protocole_name):
+
+    if sys.platform == "win32":
+        folder_json = os.path.expanduser('~') + "\\conf_python\\SFTP_connection.json"
+    else:
+        folder_json = os.environ['HOME'] + "/conf_python/SFTP_connection.json"
+    with open(folder_json, 'r') as JSON:
+        con = json.load(JSON)
+
+    return con[protocole_type][protocole_name]
