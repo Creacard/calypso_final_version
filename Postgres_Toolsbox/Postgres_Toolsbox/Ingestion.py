@@ -162,10 +162,24 @@ def FromCsvToDataBase(ListOfPath, database_type,database_name, Schema, ingestion
         -----------
         ListOfPath: str
             Path of the folder where .csv files are located
-        engine : sqlalchmey create_engine object
-            Engin object  & connection to the database from sqlalchemy
-        Schema: str
-            Indicate the schema where the table is stores into the database
+        database_type : str
+            Type of the database (into your configurations files)
+        database_name: str
+            name of the database configuration files name (ex: Postgres_calypso)
+        schema: str
+            name of the schema where the table must be written
+        ingestion_params: dict
+            standarized dictionnary with paramters for ingestion
+
+            ex:
+                params_ingestion = dict()
+                params_ingestion["protocole_type"] = "LOCAL" -- FTP or SFTP protocole type where .csv are located
+                params_ingestion["protocole_name"] = "" protocole name where .csv are located i.e in configurations files
+                params_ingestion["csv_params"] = csv_params -- reading csv paramaters (ex: csv_params = {'sep': ","})
+                params_ingestion["copy_to_filesystem"] = destination_copy (dict) -- dictionnary with two fileds:
+                    ex: destination_copy = dict()
+                        destination_copy["destination_folder"] = folder_2 -- path of teh filesystem where the data mst be duplicated
+                        destination_copy["csv_destination_params"] = {'sep': ",", 'index':False} -- writting parameters
 
         Optional Parameters (**kwargs)
         -----------

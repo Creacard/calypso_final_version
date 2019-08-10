@@ -207,7 +207,8 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
                     # read the data from a specific protocole
                     Data = read_csv_protocole(ingestion_params["protocole_type"],
                                        ingestion_params["protocole_name"],
-                                       FilePath, ingestion_params["csv_params"])
+                                       FilePath, ingestion_params["csv_params"],
+                                       copy_to_local=ingestion_params["copy_to_filesystem"])
 
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
                     _num_lines_csv = Data.shape[0]
@@ -216,7 +217,8 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
                     # read the data from a specific protocole
                     Data = read_csv_protocole(ingestion_params["protocole_type"],
                                               ingestion_params["protocole_name"],
-                                              FilePath, ingestion_params["csv_params"])
+                                              FilePath, ingestion_params["csv_params"],
+                                              copy_to_local=ingestion_params["copy_to_filesystem"])
 
                     Data = F(Data, FilePath)
                     _num_lines_csv = Data.shape[0]
@@ -231,7 +233,8 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
                 # read the data from a specific protocole
                 Data = read_csv_protocole(ingestion_params["protocole_type"],
                                           ingestion_params["protocole_name"],
-                                          FilePath, ingestion_params["csv_params"])
+                                          FilePath, ingestion_params["csv_params"],
+                                          copy_to_local=ingestion_params["copy_to_filesystem"])
 
                 _num_lines_csv = Data.shape[0]
                 InsertToPostgre(Data,
@@ -251,7 +254,8 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
                     # read the data from a specific protocole
                     Data = read_csv_protocole(ingestion_params["protocole_type"],
                                               ingestion_params["protocole_name"],
-                                              FilePath, ingestion_params["csv_params"])
+                                              FilePath, ingestion_params["csv_params"],
+                                              copy_to_local=ingestion_params["copy_to_filesystem"])
 
                     Data = F(Data, FilePath, PreprocessingCsv['KeyWords'])
                     _num_lines_csv = Data.shape[0]
@@ -260,7 +264,8 @@ def CsvToDataBase(FilePath,TlbName,Schema,ingestion_params, **kwargs):
                     # read the data from a specific protocole
                     Data = read_csv_protocole(ingestion_params["protocole_type"],
                                               ingestion_params["protocole_name"],
-                                              FilePath, ingestion_params["csv_params"])
+                                              FilePath, ingestion_params["csv_params"],
+                                              copy_to_local=ingestion_params["copy_to_filesystem"])
 
                     Data = F(Data, FilePath)
                     _num_lines_csv = Data.shape[0]
