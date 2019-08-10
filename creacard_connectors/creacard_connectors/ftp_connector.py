@@ -57,7 +57,7 @@ class connect_to_FTP(object):
 
         if folder is not None:
 
-            session.cwd(session.pwd() + folder + "/")
+            session.cwd(session.pwd() + folder)
 
         list_file = session.nlst()
 
@@ -75,7 +75,7 @@ class connect_to_FTP(object):
 
         if folder is not None:
 
-            session.cwd(session.pwd() + folder + "/")
+            session.cwd(session.pwd() + folder)
 
         # create a virtual file object
         download_file = io.BytesIO()

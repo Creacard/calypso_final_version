@@ -63,7 +63,7 @@ class connect_to_SFTP(object):
 
         if folder is not None:
 
-            session.cwd(folder + "/")
+            session.cwd(folder)
 
         list_file = session.listdir()
 
@@ -85,7 +85,7 @@ class connect_to_SFTP(object):
 
         if folder is not None:
 
-            folder_path = folder + "/"
+            folder_path = folder
             filepath = folder_path + filename
 
         else:
