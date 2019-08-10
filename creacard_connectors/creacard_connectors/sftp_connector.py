@@ -72,7 +72,7 @@ class connect_to_SFTP(object):
         return list_file
 
 
-    def extract_csv_from_ftp_to_dataframe(self, filename, **kwargs):
+    def extract_csv_from_sftp_to_dataframe(self, filename, **kwargs):
 
         folder = kwargs.get('folder', None)
         csv_params = kwargs.get('csv_params', None)
