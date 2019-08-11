@@ -85,15 +85,17 @@ class connect_to_SFTP(object):
 
         if folder is not None:
 
-            folder_path = folder
-            filepath = folder_path + filename
+            session.cwd(folder)
 
-        else:
-
-            filepath = filename
-
+        filesize = session.stat(filename).st_size
+        chunks = [(offset, 1024) for offset in range(0, filesize, 1024)]
         tmp = io.BytesIO()
-        session.getfo(filepath, tmp)
+        try:
+            with session.open(filename, "rb") as infile:
+                for chunk in infile.readv(chunks):
+                    tmp.write(chunk)
+        except:
+            pass
         s = str(tmp.getvalue())
         data_tmp = StringIO(s)
 
