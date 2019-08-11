@@ -57,7 +57,7 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
             # Create the TMP table for POS TRANSACTIONS
             # Drop the table
             query = """
-            DROP TABLE IF EXISTS "TMP_TRANSACTIONS"."TMP_POS_TRANSACTIONS"
+            DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_POS_TRANSACTIONS"
             """
 
             engine.execute(query)
@@ -67,14 +67,14 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
             # Insert into table
             InsertTableIntoDatabase(data,
                                     TlbName="TMP_POS_TRANSACTIONS",
-                                    Schema="TMP_TRANSACTIONS",
+                                    Schema="TMP_UPDATE",
                                     database_type=database_type,
                                     database_name=database_name,
                                     DropTable=False)
 
             tic =time.time()
 
-            fill_univers_sous_univers(database_type, database_name, "TMP_TRANSACTIONS", "TMP_POS_TRANSACTIONS")
+            fill_univers_sous_univers(database_type, database_name, "TMP_UPDATE", "TMP_POS_TRANSACTIONS")
 
             print("categorisation was done in {} seconds".format(time.time() - tic))
 
@@ -82,14 +82,14 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
 
             query = """
             insert into "{}"."{}"
-            select * from "TMP_TRANSACTIONS"."TMP_POS_TRANSACTIONS"
+            select * from "TMP_UPDATE"."TMP_POS_TRANSACTIONS"
             """.format(_schema, _tlbname)
 
             engine.execute(query)
 
             # Drop the table
             query = """
-            DROP TABLE IF EXISTS "TMP_TRANSACTIONS"."TMP_POS_TRANSACTIONS"
+            DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_POS_TRANSACTIONS"
             """
 
             engine.execute(query)
