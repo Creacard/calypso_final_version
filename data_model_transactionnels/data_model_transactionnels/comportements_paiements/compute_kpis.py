@@ -121,7 +121,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
     _tmp = pd.read_sql(_query_loads_monthly, con=engine)
     print("Query done in {} seconds".format(time.time() - tic))
 
-    _final_set = pd.merge(_final_set,_tmp,on='CardHolderID',how='left')
+    _final_set = pd.merge(_final_set, _tmp, on='CardHolderID', how='left')
     _final_set = _final_set.fillna(0)
 
 
@@ -247,6 +247,48 @@ def compute_kpis_transactions(engine, start_date, end_date):
     _final_set = _final_set.fillna(0)
     _final_set = _final_set.replace([np.inf, -np.inf], 0)
 
+    for month in [3, 6, 12]:
+        query = """
+        SELECT T1."CardHolderID", sum(T1."spendings") as "spendings_{}_months"
+        FROM (
+
+            select sum("Amount") as "spendings","CardHolderID"
+            from "TRANSACTIONS"."POS_TRANSACTIONS"
+            where "Amount" > 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month' 
+            group by "CardHolderID"
+
+            UNION ALL
+
+            select sum("Amount") as "spendings","CardHolderID"
+            from "TRANSACTIONS"."OTHER_TRANSACTIONS"
+            where "Amount" > 0 and "TransactionTime" >= '{}'::date - INTERVAL '{} month'
+            group by "CardHolderID"
+
+            UNION ALL
+
+            select sum("Amount") as "spendings","CardHolderID"
+            from "TRANSACTIONS"."ATM_TRANSACTIONS"
+            where "Amount" > 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month'
+            group by "CardHolderID"
+        ) as T1
+        group by T1."CardHolderID"
+        """.format(str(month),max_date, str(month), max_date, str(month), max_date, str(month))
+
+        _final_set = pd.merge(_final_set, pd.read_sql(query, con=engine), how="left", on="CardHolderID")
+
+    for month in [3, 6, 12]:
+        query = """
+        select sum("Amount") as "loads_{}_months","CardHolderID"
+        from "TRANSACTIONS"."LOADS_TRANSACTIONS"
+        where "Amount" > 0 and  "TransactionTime" >= '{}'::date - INTERVAL '{} month' 
+        group by "CardHolderID"
+        """.format(str(month), max_date,str(month))
+
+        _final_set = pd.merge(_final_set, pd.read_sql(query, con=engine), how="left", on="CardHolderID")
+
+        _final_set = _final_set.fillna(0)
+
+
     for var in ["dernier_retrait", "dernier_other", "dernier_chargement", "dernier_achat", "dernier_fees"]:
         _final_set.loc[_final_set[var] == 0, var] = pd.NaT
         _final_set[var] = pd.to_datetime(_final_set[var])
@@ -259,6 +301,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
 
     # Order the columns
     _final_set = _final_set.reindex_axis(sorted(_final_set.columns), axis=1)
+
 
     return _final_set
 
