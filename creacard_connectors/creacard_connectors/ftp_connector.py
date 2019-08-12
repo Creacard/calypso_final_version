@@ -53,7 +53,7 @@ class connect_to_FTP(object):
 
     def get_filenames_from_folder(self, folder=None):
 
-        session = create_FTP_connection(self._protocole_type, self._user, self._pwd, self._hostname, self.port)
+        session = create_FTP_connection(self._protocole_type, self._user, self._pwd, self._hostname, self._port)
 
         if folder is not None:
 
@@ -71,7 +71,7 @@ class connect_to_FTP(object):
         folder = kwargs.get('folder', None)
         csv_params = kwargs.get('csv_params', None)
 
-        session = create_FTP_connection(self._protocole_type, self._user, self._pwd, self._hostname, self.port)
+        session = create_FTP_connection(self._protocole_type, self._user, self._pwd, self._hostname, self._port)
 
         if folder is not None:
 
@@ -100,6 +100,8 @@ def extract_FTP_connection(_protocole_type,_protocole_name, _use_conf, _use_cred
         _FTP_connection = FTP_connection(_protocole_type, _protocole_name)
         _hostname = _FTP_connection["hostname"]
         _port = _FTP_connection["port"]
+        if _port == "None":
+            _port = None
     else:
         _hostname = _use_conf["hostname"]
         _port = _use_conf["port"]
