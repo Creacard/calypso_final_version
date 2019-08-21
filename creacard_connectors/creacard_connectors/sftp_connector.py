@@ -109,6 +109,41 @@ class connect_to_SFTP(object):
         return file_extracted
 
 
+    def write_dataframe_into_SFTP(self, data, filename, **kwargs):
+
+        _csv_params = kwargs.get('csv_params', None)
+        folder = kwargs.get('folder', None)
+
+        session = create_sftp_connection(self._hostname,
+                                                    self._port,
+                                                    self._private_key,
+                                                    self._user,
+                                                    self._pwd)
+
+        if folder is not None:
+
+            session.cwd(folder)
+
+        tmp = StringIO()  # create buffer (or cash memory)
+        # store the pandas dataframe into the buffer
+
+        if _csv_params is not None:
+
+            data.to_csv(tmp, **_csv_params)
+        else:
+            data.to_csv(tmp, index=False)
+
+        # tmp.getvalue() # print binary values
+        # setup the folder where you want to write the file
+        if folder is not None:
+            session.cwd(session.pwd() + folder)
+
+        session.putfo(tmp, '{}.csv'.format(filename))
+
+        session.close()
+
+
+
 
 def extract_SFTP_connection(_protocole_type,_protocole_name, _use_conf, _use_credentials):
 
