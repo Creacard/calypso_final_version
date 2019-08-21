@@ -131,6 +131,7 @@ def InsertTableIntoDatabase(Data, TlbName, Schema, database_type, database_name,
                       DropTable=False,
                       database_type=database_type,
                       database_name=database_name,
+                      SizeChunck = SizeChunck,
                       _use_credentials=_use_credentials,
                       _use_conf=_use_conf), DataSplitted)
         p.close()
