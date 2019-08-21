@@ -29,6 +29,7 @@ data["CardholderID"] = data["CardholderID"].str.replace("'","")
 data["ActivationDate"] = pd.to_datetime(data["ActivationDate"])
 
 data = data[["ActivationDate", "CardholderID"]]
+data.columns = ["ActivationTime", "CardHolderID"]
 
 
 
@@ -96,6 +97,8 @@ exec_time = time.time() - tic
 FinalData.columns = ["ActivationTime", "CardHolderID"]
 FinalData = pd.concat([data, FinalData], axis=0)
 
+
+FinalData.to_csv("/Users/justinvalet/Desktop/activation.csv", index=False, sep=",")
 
 
 TableParameter = {}
