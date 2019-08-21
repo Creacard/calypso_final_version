@@ -2,7 +2,7 @@ from ftplib import FTP
 import pandas as pd
 import io
 from ftplib import FTP_TLS
-
+from StringIO import StringIO
 from Creacard_Utils.import_credentials import credentials_extractor
 from creacard_connectors.import_configurations import FTP_connection
 
@@ -64,6 +64,30 @@ class connect_to_FTP(object):
         session.close()
 
         return list_file
+
+    def write_dataframe_into_FTP(self, data, filename, folder=None, **kwargs):
+
+        _csv_params = kwargs.get('csv_params', None)
+
+        session = create_FTP_connection(self._protocole_type, self._user, self._pwd, self._hostname, self._port)
+
+        tmp = StringIO()  # create buffer (or cash memory)
+        # store the pandas dataframe into the buffer
+
+        if _csv_params is not None:
+
+            data.to_csv(tmp, **_csv_params)
+        else:
+            data.to_csv(tmp, index=False)
+
+        # tmp.getvalue() # print binary values
+        # setup the folder where you want to write the file
+        if folder is not None:
+            session.cwd(session.pwd() + folder)
+
+        session.storbinary('STOR {}.csv'.format(filename), tmp)  # save the file in the FTP server
+
+        session.close()
 
 
     def extract_csv_from_ftp_to_dataframe(self, filename, **kwargs):
