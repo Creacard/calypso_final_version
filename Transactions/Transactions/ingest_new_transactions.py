@@ -31,9 +31,6 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
 
     if data.iloc[0, 0] == 0:
 
-        print(data)
-
-
         query = """
                         SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
                         "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
@@ -62,7 +59,7 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
 
             engine.execute(query)
 
-            CreateTable(engine, "TMP_POS_TRANSACTIONS", "TMP_TRANSACTIONS", columns_type,keep_order=True)
+            CreateTable(engine, "TMP_POS_TRANSACTIONS", "TMP_UPDATE", columns_type,keep_order=True)
 
             # Insert into table
             InsertTableIntoDatabase(data,
