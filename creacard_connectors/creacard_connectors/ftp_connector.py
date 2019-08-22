@@ -80,12 +80,15 @@ class connect_to_FTP(object):
         else:
             data.to_csv(tmp, index=False)
 
+        bio = io.BytesIO(tmp.getvalue())
+
+
         # tmp.getvalue() # print binary values
         # setup the folder where you want to write the file
         if folder is not None:
             session.cwd(session.pwd() + folder)
 
-        session.storbinary('STOR {}.csv'.format(filename), tmp)  # save the file in the FTP server
+        session.storbinary('STOR {}.csv'.format(filename), bio)  # save the file in the FTP server
 
         session.close()
 
