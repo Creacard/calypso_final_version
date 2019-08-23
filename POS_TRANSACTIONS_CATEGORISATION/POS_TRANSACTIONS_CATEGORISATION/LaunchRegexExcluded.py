@@ -91,7 +91,6 @@ def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
 
     tic = time.time()
     for i in range(0,len(DataRegex)):
-        print(i)
         ExcludedRegex(NumRow=i, DataRegex=DataRegex, engine=engine, TlbName=TlbName, schema=schema)
 
     print("update of exclusion was done in {} seconds".format(time.time() - tic))
@@ -137,7 +136,6 @@ def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
 
     tic = time.time()
     for i in range(0,len(DataRegex)):
-        print(i)
         ExcludedRegex(NumRow=i, DataRegex=DataRegex, engine=engine, TlbName=TlbName, schema=schema)
 
     print("update of exclusion was done in {} seconds".format(time.time() - tic))
@@ -158,7 +156,6 @@ def fill_univers_sous_univers(database_type, database_name, schema, TlbName):
 
     tic = time.time()
     for i in range(0, len(DataRegex)):
-        print(i)
         IncludedRegex(NumRow=i, DataRegex=DataRegex, engine=engine, TlbName=TlbName, schema=schema)
 
     print("update of exclusion was done in {} seconds".format(time.time() - tic))
