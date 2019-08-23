@@ -57,7 +57,7 @@ def cleaning_before(Data, FilePath):
         Data = Data.reset_index(drop=True)
 
         # Change Amount sign after 2018-04-11
-        if DateFile >= pd.to_datetime('2018-04-11'):
+        if DateFile >= pd.to_datetime('2018-04-10'):
             Data.loc[Data["TransactionTP"].isin(
                 ['ATM Domestic', 'ATM International', 'Merchandise Refund Hold Reversals', 'Merchant refunds',
                  'POS Domestic', 'POS International']), ["Amount"]] = - Data["Amount"]
