@@ -16,7 +16,9 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
     _schema = kwargs.get('schema', "TRANSACTIONS")
 
     date_start = datetime.datetime(_year, _month, _day)
+    date_start_cond = str(date_start)[0:10]
     end_date = date_start + datetime.timedelta(days=1)
+    end_date = str(end_date)[0:10]
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -43,7 +45,7 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
                         and "DebitCredit" IN ('Debit') 
                         and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
         
-        """.format(str(date_start.year) + str(date_start.month),str(date_start),str(end_date))
+        """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
         data = pd.read_sql(query, con=engine)
 
@@ -106,7 +108,9 @@ def add_new_atm_transactions(database_type, database_name, _year, _month, _day, 
 
 
     date_start = datetime.datetime(_year, _month, _day)
+    date_start_cond = str(date_start)[0:10]
     end_date = date_start + datetime.timedelta(days=1)
+    end_date = str(end_date)[0:10]
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -115,7 +119,7 @@ def add_new_atm_transactions(database_type, database_name, _year, _month, _day, 
        select count(*)
        from "{}"."{}"
        where "TransactionTime" >= '{}' and "TransactionTime" < '{}'
-       """.format(_schema,_tlbname, str(date_start), str(end_date))
+       """.format(_schema,_tlbname, date_start_cond, end_date)
 
     data = pd.read_sql(query, con=engine)
 
@@ -133,7 +137,7 @@ def add_new_atm_transactions(database_type, database_name, _year, _month, _day, 
                     and "DebitCredit" IN ('Debit') 
                     and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
-           """.format(str(date_start.year) + str(date_start.month), str(date_start), str(end_date))
+           """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
         query = """
            insert into "{}"."{}"
@@ -153,7 +157,9 @@ def add_new_loads_transactions(database_type, database_name, _year, _month, _day
     _schema = kwargs.get('schema', "TRANSACTIONS")
 
     date_start = datetime.datetime(_year, _month, _day)
+    date_start_cond = str(date_start)[0:10]
     end_date = date_start + datetime.timedelta(days=1)
+    end_date = str(end_date)[0:10]
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -162,7 +168,7 @@ def add_new_loads_transactions(database_type, database_name, _year, _month, _day
        select count(*)
        from "{}"."{}"
        where "TransactionTime" >= '{}' and "TransactionTime" < '{}'
-       """.format(_schema,_tlbname, str(date_start), str(end_date))
+       """.format(_schema,_tlbname, date_start_cond, end_date)
 
     data = pd.read_sql(query, con=engine)
 
@@ -176,7 +182,7 @@ def add_new_loads_transactions(database_type, database_name, _year, _month, _day
                 WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
                 and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
-           """.format(str(date_start.year) + str(date_start.month), str(date_start), str(end_date))
+           """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
         query = """
            insert into "{}"."{}"
@@ -196,7 +202,9 @@ def add_new_others_transactions(database_type, database_name, _year, _month, _da
 
 
     date_start = datetime.datetime(_year, _month, _day)
+    date_start_cond = str(date_start)[0:10]
     end_date = date_start + datetime.timedelta(days=1)
+    end_date = str(end_date)[0:10]
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -205,7 +213,7 @@ def add_new_others_transactions(database_type, database_name, _year, _month, _da
        select count(*)
        from "{}"."{}"
        where "TransactionTime" >= '{}' and "TransactionTime" < '{}'
-       """.format(_schema,_tlbname, str(date_start), str(end_date))
+       """.format(_schema,_tlbname, date_start_cond, end_date)
 
     data = pd.read_sql(query, con=engine)
 
@@ -223,7 +231,7 @@ def add_new_others_transactions(database_type, database_name, _year, _month, _da
                 and "DebitCredit" IN ('Debit') 
                 and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
-           """.format(str(date_start.year) + str(date_start.month), str(date_start), str(end_date))
+           """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
         query = """
            insert into "{}"."{}"
@@ -241,9 +249,10 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
     _tlbname = kwargs.get('tlbname', "FEES_TRANSACTIONS")
     _schema = kwargs.get('schema', "TRANSACTIONS")
 
-
     date_start = datetime.datetime(_year, _month, _day)
+    date_start_cond = str(date_start)[0:10]
     end_date = date_start + datetime.timedelta(days=1)
+    end_date = str(end_date)[0:10]
 
     engine = connect_to_database(database_type, database_name).CreateEngine()
 
@@ -252,7 +261,7 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
        select count(*)
        from "{}"."{}"
        where "TransactionTime" >= '{}' and "TransactionTime" < '{}'
-       """.format(_schema,_tlbname, str(date_start), str(end_date))
+       """.format(_schema,_tlbname, date_start_cond, end_date)
 
     data = pd.read_sql(query, con=engine)
 
@@ -272,7 +281,7 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
                 and "DebitCredit" IN ('Debit') 
                 and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
-           """.format(str(date_start.year) + str(date_start.month), str(date_start), str(end_date))
+           """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
         query = """
            insert into "{}"."{}"
