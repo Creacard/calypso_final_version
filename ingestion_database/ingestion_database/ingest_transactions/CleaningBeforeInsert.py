@@ -63,7 +63,7 @@ def cleaning_before(Data, FilePath):
                  #'POS Domestic', 'POS International']), ["Amount"]] = - Data["Amount"]
 
 
-        Data["Amount"] = Data["Amount"].asb()
+        Data["Amount"] = Data["Amount"].abs()
 
         # Drop Data, Time & First Name
         Data = Data.drop(columns=["Date", "Time", "FirstName"])
