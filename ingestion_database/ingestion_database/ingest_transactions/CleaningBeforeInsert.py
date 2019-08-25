@@ -37,8 +37,8 @@ def cleaning_before(Data, FilePath):
             Data[var] = Data[var].str.replace("'", "")
 
         # Filtering by Transaction TP
-        Data = Data[~Data["TransactionTP"].isin(['ATM Domestic Auth', 'ATM International Auth',
-                                                 'POS Domestic Auth', 'POS International Auth', 'FX Fee'])]
+        #Data = Data[~Data["TransactionTP"].isin(['ATM Domestic Auth', 'ATM International Auth',
+                                                 #'POS Domestic Auth', 'POS International Auth', 'FX Fee'])]
 
         # Reset the index
         Data = Data.reset_index(drop=True)
@@ -57,10 +57,13 @@ def cleaning_before(Data, FilePath):
         Data = Data.reset_index(drop=True)
 
         # Change Amount sign after 2018-04-10
-        if DateFile >= pd.to_datetime('2018-04-10'):
-            Data.loc[Data["TransactionTP"].isin(
-                ['ATM Domestic', 'ATM International', 'Merchandise Refund Hold Reversals', 'Merchant refunds',
-                 'POS Domestic', 'POS International']), ["Amount"]] = - Data["Amount"]
+        #if DateFile >= pd.to_datetime('2018-04-10'):
+            #Data.loc[Data["TransactionTP"].isin(
+                #['ATM Domestic', 'ATM International', 'Merchandise Refund Hold Reversals', 'Merchant refunds',
+                 #'POS Domestic', 'POS International']), ["Amount"]] = - Data["Amount"]
+
+
+        Data["Amount"] = Data["Amount"].asb()
 
         # Drop Data, Time & First Name
         Data = Data.drop(columns=["Date", "Time", "FirstName"])
