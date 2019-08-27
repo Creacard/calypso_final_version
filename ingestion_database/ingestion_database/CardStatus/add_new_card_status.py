@@ -92,6 +92,8 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     # Only transform updated date
     Data["UpdatedDate"] = pd.to_datetime(Data["UpdatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
 
+    tmp_available_balance = Data[["CardHolderID", "AvailableBalance"]]
+
     # just keep cardholderID that ware updated
     Data = Data[Data["UpdatedDate"] >= DateFile]
     Data = Data.reset_index(drop=True)
@@ -190,40 +192,26 @@ def daily_card_status2(Data, filepath, database_type, database_name):
 
         #### Step 5: Update new values
 
+        query_delete = """
+
+           DELETE FROM "CARD_STATUS"."STATUS_CARTES"
+           USING "TMP_UPDATE"."TMP_STATUS_CARTES"
+           WHERE 
+           "CARD_STATUS"."STATUS_CARTES"."CardHolderID" = "TMP_UPDATE"."TMP_STATUS_CARTES"."CardHolderID"
+
+           """
+
+        con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+        con_postgres.execute(query_delete)
+        con_postgres.close()
 
         query = """
-        
-            UPDATE "CARD_STATUS"."STATUS_CARTES"
-            SET 
-            "ActivationDate" = T2."ActivationDate",
-            "Address1" = T2."Address1",
-            "Address2" = T2."Address2",
-            "ApplicationName" = T2."ApplicationName",
-            "AvailableBalance" = T2."AvailableBalance",
-            "CardStatus" = T2."CardStatus",
-            "City" = T2."City",
-            "Country" = T2."Country", 
-            "CreationDate" = T2."CreationDate",
-            "BirthDate" = T2."BirthDate", 
-            "DistributorCode" = T2."DistributorCode",
-            "Email" = T2."Email",
-            "FirstName" = T2."FirstName",
-            "IBAN" = T2."IBAN",
-            "IsExcludedAddress" = T2."IsExcludedAddress",
-            "IsRenewal" = T2."IsRenewal",
-            "KYC_Status" = T2."KYC_Status",
-            "LastName" = T2."LastName",
-            "NoMobile" = T2."NoMobile",
-            "PostCode" = T2."PostCode",
-            "Programme" = T2."Programme",
-            "RenewalDate" = T2."RenewalDate",
-            "UpdateDate" = T2."UpdateDate",
-            "ExpirationDate" = T2."ExpirationDate"
-            FROM "TMP_UPDATE"."TMP_STATUS_CARTES" AS T2
-            WHERE "CARD_STATUS"."STATUS_CARTES"."CardHolderID" = T2."CardHolderID"
-        
-        
-        """
+
+               INSERT INTO "CARD_STATUS"."STATUS_CARTES"
+               SELECT *
+               FROM "TMP_UPDATE"."TMP_STATUS_CARTES" 
+
+              """
 
         con_postgres = connect_to_database(database_type, database_name).CreateEngine()
         con_postgres.execute(query)
@@ -232,8 +220,69 @@ def daily_card_status2(Data, filepath, database_type, database_name):
         # drop the temporary table
         con_postgres = connect_to_database(database_type, database_name).CreateEngine()
         query = """
-        DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_STATUS_CARTES"
-        """
+              DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_STATUS_CARTES"
+              """
         con_postgres.execute(query)
         con_postgres.close()
 
+
+    #### Step 6: Update available balance for all CHID
+
+    tlb_param_balance = dict()
+    tlb_param_balance["AvailableBalance"]   = "double precision"
+    tlb_param_balance["CardHolderID"]       = "VARCHAR (50)"
+
+    con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+    query = """
+       DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_AVAILABLE_BALANCE"
+       """
+    con_postgres.execute(query)
+    con_postgres.close()
+
+    InsertTableIntoDatabase(tmp_available_balance,
+                            "TMP_AVAILABLE_BALANCE",
+                            "TMP_UPDATE",
+                            database_type, database_name,
+                            DropTable=True,
+                            TableDict=tlb_param_balance,
+                            SizeChunck=10000)
+
+
+
+    con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+
+    query_balance = """
+    
+    UPDATE "CARD_STATUS"."STATUS_CARTES"
+    SET "AvailableBalance" = T1."AvailableBalance"
+    from "TMP_UPDATE"."TMP_AVAILABLE_BALANCE" as T1
+    WHERE 
+    "CARD_STATUS"."STATUS_CARTES"."CardHolderID" = T1."CardHolderID"
+    
+    """
+    con_postgres.execute(query_balance)
+    con_postgres.close()
+
+
+    con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+    query = """
+       DROP TABLE IF EXISTS "TMP_UPDATE"."TMP_AVAILABLE_BALANCE"
+       """
+    con_postgres.execute(query)
+    con_postgres.close()
+
+    con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+
+    query = """
+
+    update "CARD_STATUS"."STATUS_CARTES" as T1
+    SET "ActivationDate" = "ActivationTime"
+    FROM "CARD_STATUS"."ACTIVATION_REPORT" as T2
+    WHERE 
+    T1."CardHolderID" = T2."CardHolderID" and 
+    "ActivationDate" is null 
+
+    """
+
+    con_postgres.execute(query)
+    con_postgres.close()
