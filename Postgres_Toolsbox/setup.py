@@ -14,6 +14,7 @@ setup(
   description='This packages wraps several tools',
   install_requires=[
     "sqlalchemy",
+    "psycopg2",
     "pandas"
   ]
 )
