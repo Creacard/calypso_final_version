@@ -21,12 +21,12 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                 SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                CASE WHEN "TransactionTP" in ('POS International', 'POS International Reversal') then 1 
+                CASE WHEN "TransactionTP" in ('POS International') then 1 
                 else 0
                 end as "IsPOSInternational", "TransactionTP",
                 '' as "UNIVERS", '' as "SOUS_UNIVERS"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" IN ('POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal') 
+                where "TransactionTP" IN ('POS International','POS Domestic') 
                 and "DebitCredit" IN ('Debit') 
                 and "TransactionResult" = 'APPROVED'
     
@@ -43,12 +43,12 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                      SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
                      "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                     CASE WHEN "TransactionTP" in ('POS International', 'POS International Reversal') then 1 
+                     CASE WHEN "TransactionTP" in ('POS International') then 1 
                      else 0
                      end as "IsPOSInternational", "TransactionTP",
                      '' as "UNIVERS", '' as "SOUS_UNIVERS"
                      FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                     where "TransactionTP" IN ('POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal')
+                     where "TransactionTP" IN ('POS International','POS Domestic')
                      and "DebitCredit" IN ('Debit') 
                      and "TransactionResult" = 'APPROVED'
     
@@ -94,7 +94,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                 else 0
                 end as "IsInternational", "TransactionTP"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" IN ('ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL') 
+                where "TransactionTP" IN ('ATM Domestic','ATM International') 
                 and "DebitCredit" IN ('Debit') 
                 and "TransactionResult" = 'APPROVED'
     
@@ -115,7 +115,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                     else 0
                     end as "IsInternational", "TransactionTP"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    where "TransactionTP" IN ('ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL') 
+                    where "TransactionTP" IN ('ATM Domestic','ATM International') 
                     and "DebitCredit" IN ('Debit') 
                     and "TransactionResult" = 'APPROVED'
     
@@ -145,16 +145,33 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
-                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
-                FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
-                'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
-                'INTERNET DEBIT/CREDIT','Expired Card Load','Debit Adjustments','Chargeback credit',
-                'Cash Out','Cash Advance Int','Cash Advance','Card to Card Out','Card to Card In','ACP LOAD Debits') 
-                and "DebitCredit" IN ('Debit') 
-                and "TransactionResult" = 'APPROVED'
-    
+                select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+                "DebitCredit",
+                CASE 
+                    WHEN "TransactionTP" ~* ('reversal') THEN 1
+                    ELSE 0
+                END AS "IsReversal",
+                
+                CASE 
+                    WHEN "TransactionTP" ~* ('fee') THEN 1
+                    ELSE 0
+                END AS "IsFee"
+                
+                from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                
+                WHERE "TransactionTP" NOT IN (
+                'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee',
+                'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
+                'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
+                'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
+                'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
+                'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
+                'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
+                'Upgrade to Physical Fee','Voucher load','Voucher load fee')
+                
+                AND "TransactionTP" !~* ('auth')
+
     
             """.format(ListDate[i])
 
@@ -166,17 +183,33 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
-                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
-                    FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    where "TransactionTP" IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
-                   'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
-                   'INTERNET DEBIT/CREDIT','Expired Card Load','Debit Adjustments','Chargeback credit',
-                   'Cash Out','Cash Advance Int','Cash Advance','Card to Card Out','Card to Card In','ACP LOAD Debits') 
-                    and "DebitCredit" IN ('Debit') 
-                    and "TransactionResult" = 'APPROVED'
-    
-    
+                select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+                "DebitCredit",
+                CASE 
+                    WHEN "TransactionTP" ~* ('reversal') THEN 1
+                    ELSE 0
+                END AS "IsReversal",
+                
+                CASE 
+                    WHEN "TransactionTP" ~* ('fee') THEN 1
+                    ELSE 0
+                END AS "IsFee"
+                
+                from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                
+                WHERE "TransactionTP" NOT IN (
+                'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee',
+                'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
+                'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
+                'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
+                'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
+                'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
+                'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
+                'Upgrade to Physical Fee','Voucher load','Voucher load fee')
+                
+                AND "TransactionTP" !~* ('auth')
+
                  """.format(ListDate[i])
 
             QueryFinal = QueryFinal + Query
@@ -201,13 +234,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                 SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" NOT IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
-                'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
-                'INTERNET DEBIT/CREDIT','Expired Card Load','Debit Adjustments','Chargeback credit',
-                'Cash Out','Cash Advance Int','Cash Advance','Card to Card Out','Card to Card In','ACP LOAD Debits',
-                'ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL',
-                'POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal') 
-                and "DebitCredit" IN ('Debit') 
+                where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
                 and "TransactionResult" = 'APPROVED'
     
     
@@ -224,13 +251,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                     SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    where "TransactionTP" NOT IN ('SEPA Outgoing Payment','Representment Credit','Replacement Card Out','Replacement Card In',
-                   'MoneySend Inter Country','Merchant refunds','Merchandise Refund Hold Reversals','INTERNET DEBIT/CREDIT Refund',
-                   'INTERNET DEBIT/CREDIT','Expired Card Load','Debit Adjustments','Chargeback credit',
-                   'Cash Out','Cash Advance Int','Cash Advance','Card to Card Out','Card to Card In','ACP LOAD Debits',
-                   'ATM Domestic','ATM International','ATM WITHDRAWAL-REVERSAL',
-                   'POS International','POS Domestic','PurchaseOnUs','POS Domestic Reversal','POS International Reversal')
-                    and "DebitCredit" IN ('Debit')  
+                    where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
                     and "TransactionResult" = 'APPROVED'
     
     
@@ -264,6 +285,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
+                AND "TransactionTP" IN ('Voucher load','Terminal Load','Sepa Incoming Payment','Card to Card In','INTERNET DEBIT/CREDIT')
     
     
             """.format(ListDate[i])
@@ -279,7 +301,8 @@ def construct_transaction_tables(engine, ListDate, schema):
                     SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
+                    WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED' 
+                    AND "TransactionTP" IN ('Voucher load','Terminal Load','Sepa Incoming Payment','Card to Card In','INTERNET DEBIT/CREDIT')
     
     
                  """.format(ListDate[i])
