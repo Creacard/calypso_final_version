@@ -1,7 +1,7 @@
 import pandas as pd
 from collections import OrderedDict
 
-def CreateDictionnaryType(Data):
+def CreateDictionnaryType(Data, **kwargs):
 
     """Translate types of pandas DataFrame
        into the postgres format for data
@@ -18,6 +18,8 @@ def CreateDictionnaryType(Data):
             Dictionnary that is compliant with
             the ingestion function expected format
     """
+
+    _custom_types = kwargs.get('custom_type', None)
 
     DataTypes         = pd.DataFrame(Data.dtypes)
     DataTypes         = DataTypes.reset_index(drop=False)
@@ -45,6 +47,12 @@ def CreateDictionnaryType(Data):
         print("not filled")
 
     DataTypes = DataTypes.reindex(sorted(DataTypes.columns), axis=1)
+
+    if _custom_types is not None:
+        for c in _custom_types.keys():
+            DataTypes.loc[DataTypes["Variables"] == c, "Type"] = _custom_types[c]
+
+
     DataTypes = DataTypes.set_index('Variables')
 
 
