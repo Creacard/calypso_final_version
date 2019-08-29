@@ -11,5 +11,10 @@ setup(
   url='',
   license='',
   author='Justin Valet',
-  description='This packages wraps several tools'
+  description='This packages wraps several tools',
+  install_requires=[
+    "sklearn",
+    "matplotlib"
+  ]
+
 )
