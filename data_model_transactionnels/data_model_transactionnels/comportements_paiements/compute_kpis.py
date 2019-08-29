@@ -13,27 +13,12 @@ def compute_kpis_transactions(engine, start_date, end_date):
     min_date, max_date = compute_min_max_date(int(start_date.split("_")[0]), int(start_date.split("_")[1]),
                                               int(end_date.split("_")[0]), int(end_date.split("_")[1]))
 
-    tic = time.time()
-    i = 1
-    for _date_month in ListDate:
+    query = """
+    SELECT DISTINCT "CardHolderID"
+    FROM "CARD_STATUS"."STATUS_CARTES"
+    """
 
-        ### Import Data ###
-        _query = """
-            SELECT distinct "CardHolderID"
-            from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}" as T1
-        """.format(_date_month)
-        if i ==1:
-            _data_id = pd.read_sql(_query, con=engine)
-            _final_set = _data_id
-        else:
-            _data_id = pd.read_sql(_query, con=engine)
-            _final_set = pd.concat(
-                [_final_set, _data_id[~_data_id.CardHolderID.isin(_final_set.CardHolderID)].reset_index(drop=True)],
-                axis=0).reset_index(drop=True)
-
-        i=i+1
-
-    print("id unique computed in {} seconds".format(time.time() - tic))
+    _final_set = pd.read_sql(query, con=engine)
 
 
 
@@ -47,7 +32,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
         max("TransactionTime") as "dernier_retrait",
         sum("IsInternational") as "international_frequency_atm"
         from "TRANSACTIONS"."ATM_TRANSACTIONS"
-        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
         group by "CardHolderID"
         
                 """.format(min_date, max_date)
@@ -68,7 +53,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
             select "CardHolderID",count(*) as "frequency_atm",sum("Amount") as "sum_amount_atm",
             EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime") as "date_study"
             from "TRANSACTIONS"."ATM_TRANSACTIONS"
-            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
             group by "CardHolderID",EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime")
             ) as T1
         group by T1."CardHolderID"
@@ -90,7 +75,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
         Date_part('days',Now() - max("TransactionTime")) as "recence_load",
         max("TransactionTime") as "dernier_chargement"
         from "TRANSACTIONS"."LOADS_TRANSACTIONS"
-        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
         group by "CardHolderID"
         
                     """.format(min_date, max_date)
@@ -110,7 +95,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
             select "CardHolderID",count(*) as "frequency_load",sum("Amount") as "sum_amount_load",
             EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime") as "date_study"
             from "TRANSACTIONS"."LOADS_TRANSACTIONS"
-            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
             group by "CardHolderID",EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime")
             ) as T1
         group by T1."CardHolderID"
@@ -134,7 +119,8 @@ def compute_kpis_transactions(engine, start_date, end_date):
         Date_part('days',Now() - max("TransactionTime")) as "recence_other",
         max("TransactionTime") as "dernier_other"
         from "TRANSACTIONS"."OTHER_TRANSACTIONS"
-        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+        where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0 and "DebitCredit" = 'Debit'
+        and "IsReversal" = 0 and "IsFee" = 0
         group by "CardHolderID"
         
                   """.format(min_date,max_date)
@@ -153,8 +139,9 @@ def compute_kpis_transactions(engine, start_date, end_date):
         from(
             select "CardHolderID",count(*) as "frequency_other",sum("Amount") as "sum_amount_other",
             EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime") as "date_study"
-            from "TRANSACTIONS"."LOADS_TRANSACTIONS"
-            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+            from "TRANSACTIONS"."OTHER_TRANSACTIONS"
+             where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0 and "DebitCredit" = 'Debit'
+             and "IsReversal" = 0 and "IsFee" = 0
             group by "CardHolderID",EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime")
             ) as T1
         group by T1."CardHolderID"
@@ -179,7 +166,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
     max("TransactionTime") as "dernier_achat",
     sum("IsPOSInternational") as "international_frequency_pos"
     from "TRANSACTIONS"."POS_TRANSACTIONS"
-    where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+    where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
     group by "CardHolderID"
     
     """.format(min_date, max_date)
@@ -203,7 +190,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
             select "CardHolderID",count(*) as "frequency_pos",sum("Amount") as "sum_amount_pos",
             EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime") as "date_study"
             from "TRANSACTIONS"."POS_TRANSACTIONS"
-            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" > 0
+            where "TransactionTime" >= '{}' and "TransactionTime" <= '{}' and "Amount" >= 0
             group by "CardHolderID",EXTRACT(year from "TransactionTime") || '_' || EXTRACT(month from "TransactionTime")
             ) as T1
         group by T1."CardHolderID"
@@ -254,22 +241,24 @@ def compute_kpis_transactions(engine, start_date, end_date):
 
             select sum("Amount") as "spendings","CardHolderID"
             from "TRANSACTIONS"."POS_TRANSACTIONS"
-            where "Amount" > 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month' 
+            where "Amount" >= 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month' 
             group by "CardHolderID"
 
             UNION ALL
 
             select sum("Amount") as "spendings","CardHolderID"
             from "TRANSACTIONS"."OTHER_TRANSACTIONS"
-            where "Amount" > 0 and "TransactionTime" >= '{}'::date - INTERVAL '{} month'
+            where "Amount" >= 0 and "DebitCredit" = 'Debit'
+            and "IsReversal" = 0 and "IsFee" = 0 and "TransactionTime" >= '{}'::date - INTERVAL '{} month'
             group by "CardHolderID"
 
             UNION ALL
 
             select sum("Amount") as "spendings","CardHolderID"
             from "TRANSACTIONS"."ATM_TRANSACTIONS"
-            where "Amount" > 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month'
+            where "Amount" >= 0 and "TransactionTime" >= '{}'::date  - INTERVAL '{} month'
             group by "CardHolderID"
+            
         ) as T1
         group by T1."CardHolderID"
         """.format(str(month),max_date, str(month), max_date, str(month), max_date, str(month))
@@ -280,7 +269,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
         query = """
         select sum("Amount") as "loads_{}_months","CardHolderID"
         from "TRANSACTIONS"."LOADS_TRANSACTIONS"
-        where "Amount" > 0 and  "TransactionTime" >= '{}'::date - INTERVAL '{} month' 
+        where "Amount" >= 0 and  "TransactionTime" >= '{}'::date - INTERVAL '{} month' 
         group by "CardHolderID"
         """.format(str(month), max_date,str(month))
 
