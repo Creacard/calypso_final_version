@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 
 def create_status_carte_CardStatus2(Data, filepath):
 
@@ -89,6 +90,8 @@ def create_status_carte_CardStatus2(Data, filepath):
                 "Programme", "RenewalDate", "UpdateDate", "ExpirationDate"]
 
     Data.columns = colnames
+
+    Data["UpdateBalanceDate"] = datetime.datetime.now()
     Data = Data[sorted(Data.columns)]
 
     Data.loc[Data.loc[:,"KYC_Status"] == 0, "KYC_Status"] = 'Anonyme'

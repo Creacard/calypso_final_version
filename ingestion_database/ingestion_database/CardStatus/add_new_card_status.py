@@ -95,7 +95,7 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     tmp_available_balance = Data[["CardHolderID", "AvailableBalance"]]
 
     # just keep cardholderID that ware updated
-    Data = Data[Data["UpdatedDate"] >= DateFile]
+    Data = Data[(Data["UpdatedDate"] >= DateFile) & (Data["UpdatedDate"] < DateFile + pd.Timedelta(days=1))]
     Data = Data.reset_index(drop=True)
 
 
