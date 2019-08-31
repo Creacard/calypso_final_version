@@ -1,7 +1,7 @@
 import pandas as pd
 from creacard_connectors.database_connector import connect_to_database
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
-
+import datetime
 
 def daily_card_status2(Data, filepath, database_type, database_name):
 
@@ -33,7 +33,8 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     TableParameter["PostCode"]           = "VARCHAR (50)"
     TableParameter["Programme"]          = "VARCHAR (50)"
     TableParameter["RenewalDate"]        = "timestamp without time zone"
-    TableParameter["UpdateDate"]         = "timestamp without time zone"
+    TableParameter["UpdateBalanceDate"]  = "timestamp without time zone"
+    TableParameter["UpdateDate"] = "timestamp without time zone"
 
     keepcol = ["CardHolderID", "Email", "FirstName",
                "LastName", "City", "Country", "Card Status", "DistributorCode",
@@ -93,6 +94,7 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     Data["UpdatedDate"] = pd.to_datetime(Data["UpdatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
 
     tmp_available_balance = Data[["CardHolderID", "AvailableBalance"]]
+    tmp_available_balance["UpdateBalanceDate"] = datetime.datetime.now()
 
     # just keep cardholderID that ware updated
     Data = Data[(Data["UpdatedDate"] >= DateFile) & (Data["UpdatedDate"] < DateFile + pd.Timedelta(days=1))]
@@ -144,6 +146,9 @@ def daily_card_status2(Data, filepath, database_type, database_name):
                     "Programme", "RenewalDate", "UpdateDate", "ExpirationDate"]
 
         Data.columns = colnames
+
+        Data["UpdateBalanceDate"] = datetime.datetime.now()
+
         Data = Data[sorted(Data.columns)]
 
         Data.loc[Data.loc[: ,"KYC_Status"] == 0, "KYC_Status"] = 'Anonyme'
@@ -231,6 +236,7 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     tlb_param_balance = dict()
     tlb_param_balance["AvailableBalance"]   = "double precision"
     tlb_param_balance["CardHolderID"]       = "VARCHAR (50)"
+    tlb_param_balance["UpdateDate"] = "timestamp without time zone"
 
     con_postgres = connect_to_database(database_type, database_name).CreateEngine()
     query = """
@@ -254,7 +260,8 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     query_balance = """
     
     UPDATE "CARD_STATUS"."STATUS_CARTES"
-    SET "AvailableBalance" = T1."AvailableBalance"
+    SET "AvailableBalance" = T1."AvailableBalance",
+    "UpdateBalanceDate" = T1."UpdateBalanceDate"
     from "TMP_UPDATE"."TMP_AVAILABLE_BALANCE" as T1
     WHERE 
     "CARD_STATUS"."STATUS_CARTES"."CardHolderID" = T1."CardHolderID"
