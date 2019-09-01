@@ -236,7 +236,7 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     tlb_param_balance = dict()
     tlb_param_balance["AvailableBalance"]   = "double precision"
     tlb_param_balance["CardHolderID"]       = "VARCHAR (50)"
-    tlb_param_balance["UpdateDate"] = "timestamp without time zone"
+    tlb_param_balance["UpdateBalanceDate"] = "timestamp without time zone"
 
     con_postgres = connect_to_database(database_type, database_name).CreateEngine()
     query = """
