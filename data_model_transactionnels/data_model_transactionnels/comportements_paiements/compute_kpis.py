@@ -277,6 +277,73 @@ def compute_kpis_transactions(engine, start_date, end_date):
 
         _final_set = _final_set.fillna(0)
 
+    # compute new kpis
+
+    for month in [3, 6, 12]:
+        query = """
+
+
+        select "CardHolderID", 
+        count("Amount")  filter (where "group_transactions" = 'POS')  as "Nb_Transaction_POS_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'ATM')  as "Nb_Transaction_ATM_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Card to card in')  as "Nb_Transaction_CCin_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Card to card out')  as "Nb_Transaction_CCout_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'LOAD')  as "Nb_Transaction_LOAD__{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Replacement in')  as "Nb_Transaction_Rin_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Replacement out')  as "Nb_Transaction_Rout_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Virement entrant')  as "Nb_Transaction_Vin_{}_M",
+        count("Amount")  filter (where "group_transactions" = 'Virement sortant')  as "Nb_Transaction_Vout_{}_M", 
+        count("Amount")  filter (where "IsVolontaire" = 1)  as "Nb_Transaction_Volontaire_{}_M" 
+
+        FROM (
+            select  a."CardHolderID","Amount",b."TransactionTP","group_transactions","IsVolontaire","TransactionTime"
+            from "CARD_STATUS"."STATUS_CARTES" as a
+            left join "TRANSACTIONS"."POS_TRANSACTIONS" as b on a."CardHolderID"=b."CardHolderID"
+            left join "REFERENTIEL"."Type_Transactions" as c on b."TransactionTP"=c."TransactionTP"
+            where  "TransactionTime" >= '{}'::date - INTERVAL '{} month'
+
+
+            UNION ALL
+
+            select  a."CardHolderID","Amount",b."TransactionTP","group_transactions","IsVolontaire","TransactionTime"
+            from "CARD_STATUS"."STATUS_CARTES" as a
+            left join "TRANSACTIONS"."ATM_TRANSACTIONS" as b on a."CardHolderID"=b."CardHolderID"
+            left join "REFERENTIEL"."Type_Transactions" as c on b."TransactionTP"=c."TransactionTP"
+            where "TransactionTime" >= '{}'::date - INTERVAL '{} month'
+
+
+
+            UNION ALL
+
+
+
+            select  a."CardHolderID","Amount",b."TransactionTP","group_transactions","IsVolontaire","TransactionTime"
+            from "CARD_STATUS"."STATUS_CARTES" as a
+            left join "TRANSACTIONS"."LOADS_TRANSACTIONS" as b on a."CardHolderID"=b."CardHolderID"
+            left join "REFERENTIEL"."Type_Transactions" as c on b."TransactionTP"=c."TransactionTP"
+            where    "TransactionTime" >='{}'::date - INTERVAL '{} month'
+
+            UNION ALL
+
+
+            select  a."CardHolderID","Amount",b."TransactionTP","group_transactions","IsVolontaire","TransactionTime"
+            from "CARD_STATUS"."STATUS_CARTES" as a
+            left join "TRANSACTIONS"."OTHER_TRANSACTIONS" as b on a."CardHolderID"=b."CardHolderID"
+            left join "REFERENTIEL"."Type_Transactions" as c on b."TransactionTP"=c."TransactionTP"
+            where   "TransactionTime" >= '{}'::date - INTERVAL '{} month'
+
+
+
+        ) as T 
+        group by  "CardHolderID"
+        """.format(str(month), str(month), str(month), str(month), str(month), str(month), str(month), str(month),
+                   str(month), str(month)
+                   , max_date, str(month), max_date, str(month), max_date, str(month), max_date, str(month))
+
+    _final_set = pd.merge(_final_set, pd.read_sql(query, con=engine), how="left", on="CardHolderID")
+
+    _final_set = _final_set.fillna(0)
+
 
     for var in ["dernier_retrait", "dernier_other", "dernier_chargement", "dernier_achat", "dernier_fees"]:
         _final_set.loc[_final_set[var] == 0, var] = pd.NaT
