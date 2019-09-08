@@ -59,6 +59,7 @@ def create_status_carte_CardStatus2(Data, filepath):
     Data["UpdatedDate"] = pd.to_datetime(Data["UpdatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
     Data["CreatedDate"] = pd.to_datetime(Data["CreatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
     Data["Date of Birth"] = pd.to_datetime(Data["Date of Birth"], format="%b %d %Y %I:%M%p", errors='coerce')
+    Data["Card Status"] = Data["Card Status"].astype(str)
 
     # transform expirydate
     Data["expirydate"] = Data["expirydate"].astype(str)
@@ -94,10 +95,10 @@ def create_status_carte_CardStatus2(Data, filepath):
     Data["UpdateBalanceDate"] = datetime.datetime.now()
     Data = Data[sorted(Data.columns)]
 
-    Data.loc[Data.loc[:,"KYC_Status"] == 0, "KYC_Status"] = 'Anonyme'
-    Data.loc[Data.loc[:,"KYC_Status"] == 1, "KYC_Status"] = 'SDD'
-    Data.loc[Data.loc[:,"KYC_Status"] == 2, "KYC_Status"] = 'KYC'
-    Data.loc[Data.loc[:,"KYC_Status"] == 3, "KYC_Status"] = 'KYC LITE'
+    Data.loc[(Data["KYC_Status"] == '0') | (Data["KYC_Status"] == '0.0') | (Data["KYC_Status"] == 0), "KYC_Status"] = 'Anonyme'
+    Data.loc[(Data["KYC_Status"] == '1') | (Data["KYC_Status"] == '1.0') | (Data["KYC_Status"] == 1), "KYC_Status"] = 'SDD'
+    Data.loc[(Data["KYC_Status"] == '2') | (Data["KYC_Status"] == '2.0') | (Data["KYC_Status"] == 2), "KYC_Status"] = 'KYC'
+    Data.loc[(Data["KYC_Status"] == '3') | (Data["KYC_Status"] == '3.0') | (Data["KYC_Status"] == 3), "KYC_Status"] = 'KYC LITE'
 
     Data["DistributorCode"] = Data["DistributorCode"].fillna(-1)
     Data["DistributorCode"] = Data["DistributorCode"].astype(int)
