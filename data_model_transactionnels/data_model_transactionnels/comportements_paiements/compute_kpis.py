@@ -340,7 +340,7 @@ def compute_kpis_transactions(engine, start_date, end_date):
                    str(month), str(month)
                    , max_date, str(month), max_date, str(month), max_date, str(month), max_date, str(month))
 
-    _final_set = pd.merge(_final_set, pd.read_sql(query, con=engine), how="left", on="CardHolderID")
+        _final_set = pd.merge(_final_set, pd.read_sql(query, con=engine), how="left", on="CardHolderID")
 
     _final_set = _final_set.fillna(0)
 
