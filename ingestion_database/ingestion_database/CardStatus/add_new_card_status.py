@@ -4,7 +4,6 @@ from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 import datetime
 
 def daily_card_status2(Data, filepath, database_type, database_name):
-
     #### constant variables
 
     # Table parameter for the temporary table
@@ -235,6 +234,20 @@ def daily_card_status2(Data, filepath, database_type, database_name):
     con_postgres = connect_to_database(database_type, database_name).CreateEngine()
     con_postgres.execute(query_delete)
     con_postgres.close()
+
+
+    query_update = """
+    
+    UPDATE "TMP_UPDATE"."TMP_STATUS_CARTES" 
+    SET "IsRenewal" = CASE WHEN "DistributorCode" in ('203','914','915') then 1
+    else 0
+    end 
+    """
+
+    con_postgres = connect_to_database(database_type, database_name).CreateEngine()
+    con_postgres.execute(query_update)
+    con_postgres.close()
+
 
     query = """
 
