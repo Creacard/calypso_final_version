@@ -1,3 +1,11 @@
+""" construct a connector """
+
+# Author: Justin Valet
+# Date : 31/08/2019
+# e-mail: jv.datamail@gmail.com
+
+
+
 import json
 import os
 import sys
