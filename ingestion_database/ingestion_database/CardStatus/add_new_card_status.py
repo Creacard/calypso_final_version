@@ -178,7 +178,7 @@ def daily_card_status2(Data, filepath, database_type, database_name):
         set(outer_join.loc[~outer_join["CardHolderID"].isin(new_card_holder_id), "CardHolderID"]))]
 
     FileName = filepath.split('/')[-1].replace(".csv", "")
-    DateFile = pd.to_datetime(FileName.split("-")[1] + "-" + FileName.split("-")[2] + "-" + FileName.split("-")[3])
+    DateFile = pd.to_datetime(FileName.split("-")[1] + "-" + FileName.split("-")[2] + "-" + FileName.split("-")[3]) - datetime.timedelta(days=1)
 
     data_to_change["dt_change"] = DateFile
 
