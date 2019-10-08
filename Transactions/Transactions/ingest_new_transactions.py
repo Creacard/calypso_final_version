@@ -238,7 +238,7 @@ def add_new_others_transactions(database_type, database_name, _year, _month, _da
                from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
 
                WHERE "TransactionTP" NOT IN (
-               'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee',
+               'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee','FX Fee',
                'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
                'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
                'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
@@ -292,7 +292,7 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
-                and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
+                and "TransactionResul" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
            """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
@@ -302,6 +302,16 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
            """.format(_schema,_tlbname, querytmp)
 
         engine.execute(query)
+
+        query_update = """
+            update "TRANSACTIONS"."FEES_TRANSACTIONS"
+            set "Surcharge" = ABS("Surcharge")
+            where "TransactionTP" = 'FX Fee' and "Surcharge" < 0
+        """
+
+        engine.execute(query_update)
+
+
         engine.close()
 
     else:
