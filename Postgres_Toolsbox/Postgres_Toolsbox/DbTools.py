@@ -378,3 +378,26 @@ def CreateSchema(engine, Schema):
 
     engine.execute(Query)
 
+
+def insert_into_postgres_copyfrom(df, database_type, database_name, schema, TlbName, **kwargs):
+
+    _encod = kwargs.get('encoding', 'utf-8')
+
+    # data formating before insert
+
+    for date_var in df.dtypes[df.dtypes == "datetime64[ns]"].index:
+        df[date_var] = df[date_var].astype(str).replace("NaT", "None")
+
+    for var_name in df.dtypes[df.dtypes == "object"].index:
+        df[var_name] = df[var_name].str.replace(",", "")
+        df[var_name] = df[var_name].astype('category')
+
+    output = StringIO.StringIO()
+    df.reset_index(drop=True).to_csv(output, header=None, index=False, sep=",", na_rep=None, encoding=_encod)
+    output.seek(0)
+
+    con = connect_to_database(database_type, database_name).CreateEngine()
+    cur = con.connection.cursor()
+    cur.copy_from(output, '"{}"."{}"'.format(schema, TlbName), sep=",", null="None")
+    con.connection.commit()
+    con.close()
