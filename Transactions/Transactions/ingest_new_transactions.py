@@ -292,7 +292,7 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                 where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
-                and "TransactionResul" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
+                and "TransactionResult" = 'APPROVED' and "TransactionTime" >= '{}' and "TransactionTime" < '{}'
 
            """.format(str(date_start.year) + str(date_start.month), date_start_cond, end_date)
 
