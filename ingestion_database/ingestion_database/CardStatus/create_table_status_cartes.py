@@ -3,36 +3,6 @@ import datetime
 
 def create_status_carte_CardStatus2(Data, filepath):
     # Table parameter for the temporary table
-    TableParameter = {}
-    TableParameter["ActivationDate"] = "timestamp without time zone"
-    TableParameter["Address1"] = "TEXT"
-    TableParameter["Address2"] = "TEXT"
-    TableParameter["ApplicationName"] = "VARCHAR (50)"
-    TableParameter["AvailableBalance"] = "double precision"
-    TableParameter["BirthDate"] = "timestamp without time zone"
-    TableParameter["CardHolderID"] = "VARCHAR (50)"
-    TableParameter["CardStatus"] = "VARCHAR (100)"
-    TableParameter["City"] = "VARCHAR (100)"
-    TableParameter["Country"] = "VARCHAR (50)"
-    TableParameter["CreationDate"] = "timestamp without time zone"
-    TableParameter["DistributorCode"] = "INTEGER"
-    TableParameter["Email"] = "TEXT"
-    TableParameter["ExpirationDate"] = "timestamp without time zone"
-    TableParameter["FirstName"] = "TEXT"
-    TableParameter["IBAN"] = "TEXT"
-    TableParameter["IsExcludedAddress"] = "INTEGER"
-    TableParameter["IsRenewal"] = "INTEGER"
-    TableParameter["KYC_Status"] = "VARCHAR (50)"
-    TableParameter["LastName"] = "TEXT"
-    TableParameter["LastChangeDate"] = "timestamp without time zone"
-    TableParameter["LastAddressDate"] = "timestamp without time zone"
-    TableParameter["LastCustomerDate"] = "timestamp without time zone"
-    TableParameter["NoMobile"] = "TEXT"
-    TableParameter["PostCode"] = "VARCHAR (50)"
-    TableParameter["Programme"] = "VARCHAR (50)"
-    TableParameter["RenewalDate"] = "timestamp without time zone"
-    TableParameter["UpdateDate"] = "timestamp without time zone"
-
     keepcol = ["CardHolderID", "Email", "FirstName",
                "LastName", "City", "Country", "Card Status", "DistributorCode",
                "ApplicationName", "Date of Birth", "IBAN",
