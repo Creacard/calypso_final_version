@@ -19,16 +19,16 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
-                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                CASE WHEN "TransactionTP" in ('POS International') then 1 
-                else 0
-                end as "IsPOSInternational", "TransactionTP",
-                '' as "UNIVERS", '' as "SOUS_UNIVERS"
-                FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" IN ('POS International','POS Domestic') 
-                and "DebitCredit" IN ('Debit') 
-                and "TransactionResult" = 'APPROVED'
+                      SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                        "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+                        CASE WHEN "TransactionTP" in ('POS International') then 1 
+                        else 0
+                        end as "IsPOSInternational",
+                        '' as "UNIVERS", '' as "SOUS_UNIVERS"
+                        FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                        where "TransactionTP" IN ('POS International','POS Domestic') 
+                        and "DebitCredit" IN ('Debit') 
+                        and "TransactionResult" = 'APPROVED'
     
     
             """.format(ListDate[i])
@@ -41,17 +41,16 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                     SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
-                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                     CASE WHEN "TransactionTP" in ('POS International') then 1 
-                     else 0
-                     end as "IsPOSInternational", "TransactionTP",
-                     '' as "UNIVERS", '' as "SOUS_UNIVERS"
-                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                     where "TransactionTP" IN ('POS International','POS Domestic')
-                     and "DebitCredit" IN ('Debit') 
-                     and "TransactionResult" = 'APPROVED'
-    
+                      SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                        "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+                        CASE WHEN "TransactionTP" in ('POS International') then 1 
+                        else 0
+                        end as "IsPOSInternational",
+                        '' as "UNIVERS", '' as "SOUS_UNIVERS"
+                        FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                        where "TransactionTP" IN ('POS International','POS Domestic') 
+                        and "DebitCredit" IN ('Debit') 
+                        and "TransactionResult" = 'APPROVED'
     
                  """.format(ListDate[i])
 
@@ -88,15 +87,15 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
-                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                CASE WHEN "TransactionTP" in ('ATM International') then 1
-                else 0
-                end as "IsInternational", "TransactionTP"
-                FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                where "TransactionTP" IN ('ATM Domestic','ATM International') 
-                and "DebitCredit" IN ('Debit') 
-                and "TransactionResult" = 'APPROVED'
+                    SELECT "CardHolderID","MCC","Amount","MerchantName","TransactionTime","Currency",
+                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+                    CASE WHEN "TransactionTP" in ('ATM International') then 1
+                    else 0
+                    end as "IsInternational"
+                    FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                    where "TransactionTP" IN ('ATM Domestic','ATM International') 
+                    and "DebitCredit" IN ('Debit') 
+                    and "TransactionResult" = 'APPROVED'
     
     
             """.format(ListDate[i])
@@ -113,7 +112,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                     CASE WHEN "TransactionTP" in ('ATM International') then 1
                     else 0
-                    end as "IsInternational", "TransactionTP"
+                    end as "IsInternational"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     where "TransactionTP" IN ('ATM Domestic','ATM International') 
                     and "DebitCredit" IN ('Debit') 
@@ -145,33 +144,32 @@ def construct_transaction_tables(engine, ListDate, schema):
 
             Query = """
     
-                select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
-                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                "DebitCredit",
-                CASE 
-                    WHEN "TransactionTP" ~* ('reversal') THEN 1
-                    ELSE 0
-                END AS "IsReversal",
-                
-                CASE 
-                    WHEN "TransactionTP" ~* ('fee') THEN 1
-                    ELSE 0
-                END AS "IsFee"
-                
-                from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                
-                WHERE "TransactionTP" NOT IN (
-                'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee',
-                'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
-                'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
-                'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
-                'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
-                'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
-                'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
-                'Upgrade to Physical Fee','Voucher load','Voucher load fee')
-                
-                AND "TransactionTP" !~* ('auth')
+ select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+               "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+               "DebitCredit",
+               CASE 
+                   WHEN "TransactionTP" ~* ('reversal') THEN 1
+                   ELSE 0
+               END AS "IsReversal",
 
+               CASE 
+                   WHEN "TransactionTP" ~* ('fee') THEN 1
+                   ELSE 0
+               END AS "IsFee"
+
+               from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+
+               WHERE "TransactionTP" NOT IN (
+               'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee','FX Fee',
+               'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
+               'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
+               'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
+               'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
+               'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
+               'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
+               'Upgrade to Physical Fee','Voucher load','Voucher load fee')
+
+               AND "TransactionTP" !~* ('auth')
     
             """.format(ListDate[i])
 
@@ -183,33 +181,33 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
-                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
-                "DebitCredit",
-                CASE 
-                    WHEN "TransactionTP" ~* ('reversal') THEN 1
-                    ELSE 0
-                END AS "IsReversal",
-                
-                CASE 
-                    WHEN "TransactionTP" ~* ('fee') THEN 1
-                    ELSE 0
-                END AS "IsFee"
-                
-                from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                
-                WHERE "TransactionTP" NOT IN (
-                'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee',
-                'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
-                'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
-                'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
-                'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
-                'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
-                'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
-                'Upgrade to Physical Fee','Voucher load','Voucher load fee')
-                
-                AND "TransactionTP" !~* ('auth')
+ select "CardHolderID","MCC","Amount","MerchantName","TransactionTP","TransactionTime","Currency",
+               "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
+               "DebitCredit",
+               CASE 
+                   WHEN "TransactionTP" ~* ('reversal') THEN 1
+                   ELSE 0
+               END AS "IsReversal",
 
+               CASE 
+                   WHEN "TransactionTP" ~* ('fee') THEN 1
+                   ELSE 0
+               END AS "IsFee"
+
+               from "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+
+               WHERE "TransactionTP" NOT IN (
+               'ATM Domestic','ATM Domestic Fee','ATM International','ATM International Fee','BalanceInquiry fee','FX Fee',
+               'Bank Payment fee','Bank Transfer Fee','Batch Load Fee','Card Fee','Card Load Fee','Card Load at Payzone Fee',
+               'Card To Card Transfer Fee','Card to Card In','Cash Advance Fee','Decline Fee','Deposit To Card API Fee',
+               'INTERNET DEBIT/CREDIT','IVR Fee','InternetDrCrFee','KYC Card Upgrade Fee','Monthly Fee','POS Domestic',
+               'POS International','POS International Fee','Paytrail Load Fee','Post Office Fee','RefundFee','Replacement Card Fee',
+               'Replacement Card In','SEPA Outgoing Payment Fee','SMS Balance Inquiry fee','SMS Fee','SMS Lock UnLock Fee',
+               'Sepa Credit Fee','Sepa Incoming Payment','Sepa Incoming Payment Fee','Terminal Load','Terminal load fee',
+               'Upgrade to Physical Fee','Voucher load','Voucher load fee')
+
+               AND "TransactionTP" !~* ('auth')
+               
                  """.format(ListDate[i])
 
             QueryFinal = QueryFinal + Query
@@ -248,18 +246,25 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
-                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
-                    FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
-                    and "TransactionResult" = 'APPROVED'
-    
+                SELECT "CardHolderID","MCC","Fee","Surcharge","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
+                FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                where "DebitCredit" IN ('Debit') and "TransactionTP" ~* 'fee' and "TransactionTP" !~* 'reversal'
+                and "TransactionResult" = 'APPROVED'
     
                  """.format(ListDate[i])
 
             QueryFinal = QueryFinal + Query
 
     engine.execute(QueryFinal)
+
+    query_update = """
+        update "TRANSACTIONS"."FEES_TRANSACTIONS"
+        set "Surcharge" = ABS("Surcharge")
+        where "TransactionTP" = 'FX Fee' and "Surcharge" < 0
+    """
+
+    engine.execute(query_update)
 
     # Loads
 
@@ -284,7 +289,7 @@ def construct_transaction_tables(engine, ListDate, schema):
                 SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
                 "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
                 FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED'
+                WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED' 
                 AND "TransactionTP" IN ('Voucher load','Terminal Load','Sepa Incoming Payment','Card to Card In','INTERNET DEBIT/CREDIT')
     
     
@@ -298,11 +303,11 @@ def construct_transaction_tables(engine, ListDate, schema):
     
                     UNION ALL
     
-                    SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
-                    "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
-                    FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
-                    WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED' 
-                    AND "TransactionTP" IN ('Voucher load','Terminal Load','Sepa Incoming Payment','Card to Card In','INTERNET DEBIT/CREDIT')
+                SELECT "CardHolderID","MCC","Amount","TransactionTP","TransactionTime","Currency",
+                "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID"
+                FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
+                WHERE "DebitCredit" IN ('Credit') and "TransactionResult" = 'APPROVED' 
+                AND "TransactionTP" IN ('Voucher load','Terminal Load','Sepa Incoming Payment','Card to Card In','INTERNET DEBIT/CREDIT')
     
     
                  """.format(ListDate[i])
