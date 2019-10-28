@@ -2,17 +2,47 @@ import pandas as pd
 import datetime
 
 def create_status_carte_CardStatus2(Data, filepath):
+    # Table parameter for the temporary table
+    TableParameter = {}
+    TableParameter["ActivationDate"] = "timestamp without time zone"
+    TableParameter["Address1"] = "TEXT"
+    TableParameter["Address2"] = "TEXT"
+    TableParameter["ApplicationName"] = "VARCHAR (50)"
+    TableParameter["AvailableBalance"] = "double precision"
+    TableParameter["BirthDate"] = "timestamp without time zone"
+    TableParameter["CardHolderID"] = "VARCHAR (50)"
+    TableParameter["CardStatus"] = "VARCHAR (100)"
+    TableParameter["City"] = "VARCHAR (100)"
+    TableParameter["Country"] = "VARCHAR (50)"
+    TableParameter["CreationDate"] = "timestamp without time zone"
+    TableParameter["DistributorCode"] = "INTEGER"
+    TableParameter["Email"] = "TEXT"
+    TableParameter["ExpirationDate"] = "timestamp without time zone"
+    TableParameter["FirstName"] = "TEXT"
+    TableParameter["IBAN"] = "TEXT"
+    TableParameter["IsExcludedAddress"] = "INTEGER"
+    TableParameter["IsRenewal"] = "INTEGER"
+    TableParameter["KYC_Status"] = "VARCHAR (50)"
+    TableParameter["LastName"] = "TEXT"
+    TableParameter["LastChangeDate"] = "timestamp without time zone"
+    TableParameter["LastAddressDate"] = "timestamp without time zone"
+    TableParameter["LastCustomerDate"] = "timestamp without time zone"
+    TableParameter["NoMobile"] = "TEXT"
+    TableParameter["PostCode"] = "VARCHAR (50)"
+    TableParameter["Programme"] = "VARCHAR (50)"
+    TableParameter["RenewalDate"] = "timestamp without time zone"
+    TableParameter["UpdateDate"] = "timestamp without time zone"
 
     keepcol = ["CardHolderID", "Email", "FirstName",
-     "LastName", "City", "Country", "Card Status", "DistributorCode",
-     "ApplicationName", "Date of Birth", "IBAN",
-     "CreatedDate", "UpdatedDate", "Address1", "Address2", "PostCode",
-     "KYC Status", "expirydate", "AvailableBalance", "NoMobile",
-     "Programme"]
+               "LastName", "City", "Country", "Card Status", "DistributorCode",
+               "ApplicationName", "Date of Birth", "IBAN",
+               "CreatedDate", "UpdatedDate", "Address1", "Address2", "PostCode",
+               "KYC Status", "expirydate", "AvailableBalance", "NoMobile",
+               "Programme"]
 
+    #### Step 1: Extract the data from the file and keep ony updated data
     # extract filedate
     FileName = filepath.split('/')[-1].replace(".csv", "")
-
 
     DateFile = pd.to_datetime(FileName.split("-")[1] + "-" + FileName.split("-")[2] + "-" + FileName.split("-")[3])
 
@@ -40,7 +70,7 @@ def create_status_carte_CardStatus2(Data, filepath):
                      "LastName", "City", "Country", "Card Status", "DistributorCode",
                      "ApplicationName", "Date of Birth", "SortCodeAccNum", "IBAN",
                      "CreatedDate", "UpdatedDate", "Address1", "Address2", "PostCode",
-                     "KYC Status", "expirydate", "AvailableBalance", "UDF2","NoMobile",
+                     "KYC Status", "expirydate", "AvailableBalance", "UDF2", "NoMobile",
                      "UDF3", "VPVR"]
 
     # add the names of columns to the dataframe
@@ -49,17 +79,18 @@ def create_status_carte_CardStatus2(Data, filepath):
     # store the missing columns
     missing_columns = list(set(keepcol).difference(col_names))
 
-    if missing_columns: # if the list is not add new columns to the dataframe
+    if missing_columns:  # if the list is not add new columns to the dataframe
         for col in missing_columns:
             Data[col] = None
 
+    #### Step 2: Transform the data
 
     # transform date columns to pd.datetime format in order to have a consistent format
     # of date over the database
+    # Only transform updated date
     Data["UpdatedDate"] = pd.to_datetime(Data["UpdatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
     Data["CreatedDate"] = pd.to_datetime(Data["CreatedDate"], format="%b %d %Y %I:%M%p", errors='coerce')
     Data["Date of Birth"] = pd.to_datetime(Data["Date of Birth"], format="%b %d %Y %I:%M%p", errors='coerce')
-    Data["Card Status"] = Data["Card Status"].astype(str)
 
     # transform expirydate
     Data["expirydate"] = Data["expirydate"].astype(str)
@@ -68,41 +99,55 @@ def create_status_carte_CardStatus2(Data, filepath):
 
     Data = Data[keepcol]
 
-
     # condition remove address
-    AddressToRemove = ["77 OXFORD STREET LONDON","17 RUE D ORLEANS","TSA 51760","77 Oxford Street London","36 CARNABY STREET",
-    "36 CARNABY STREET LONDON","36 CARNABY STREET LONDON","ADDRESS","17 RUE D ORLEANS PARIS","CreaCard Espana S L  Paseo de Gracia 59",
-     "36 Carnaby Street London","CREACARD SA Pl  Marcel Broodthaers 8 Box 5","17 Rue D Orleans Paris",
-     "CREACARD ESPANA S L  PASEO DE GRACIA 59","CreaCard 17 rue d Orleans","CREACARD SA PL  MARCEL BROODTHAERS 8 BOX 75",
-     "CREACARD SA PL  MARCEL BROODTHAERS 8 BOX 75","36 Carnaby Street","77 OXFORD STREET"]
+    AddressToRemove = ["77 OXFORD STREET LONDON", "17 RUE D ORLEANS", "TSA 51760", "77 Oxford Street London"
+        , "36 CARNABY STREET",
+                       "36 CARNABY STREET LONDON", "36 CARNABY STREET LONDON", "ADDRESS", "17 RUE D ORLEANS PARIS"
+        , "CreaCard Espana S L  Paseo de Gracia 59",
+                       "36 Carnaby Street London", "CREACARD SA Pl  Marcel Broodthaers 8 Box 5",
+                       "17 Rue D Orleans Paris",
+                       "CREACARD ESPANA S L  PASEO DE GRACIA 59", "CreaCard 17 rue d Orleans"
+        , "CREACARD SA PL  MARCEL BROODTHAERS 8 BOX 75",
+                       "CREACARD SA PL  MARCEL BROODTHAERS 8 BOX 75", "36 Carnaby Street", "77 OXFORD STREET"]
 
     Data["IsExcludedAddress"] = (Data.Address1.isin(AddressToRemove)).astype(int)
 
     Data["ActivationDate"] = pd.NaT
     Data["IsRenewal"] = 0
     Data["RenewalDate"] = pd.NaT
+    Data["LastChangeDate"] = pd.NaT
+    Data["LastAddressDate"] = pd.NaT
+    Data["LastCustomerDate"] = pd.NaT
 
     Data = Data[sorted(Data.columns)]
 
-    colnames = ["ActivationDate", "Address1", "Address2", "ApplicationName","AvailableBalance",
+    colnames = ["ActivationDate", "Address1", "Address2", "ApplicationName", "AvailableBalance",
                 "CardStatus", "CardHolderID", "City", "Country", "CreationDate",
-                "BirthDate", "DistributorCode", "Email", "FirstName", "IBAN","IsExcludedAddress",
-                "IsRenewal", "KYC_Status", "LastName", "NoMobile", "PostCode",
+                "BirthDate", "DistributorCode", "Email", "FirstName", "IBAN", "IsExcludedAddress",
+                "IsRenewal", "KYC_Status", "LastAddressDate", "LastChangeDate", "LastCustomerDate",
+                "LastName", "NoMobile", "PostCode",
                 "Programme", "RenewalDate", "UpdateDate", "ExpirationDate"]
 
     Data.columns = colnames
 
-    Data["UpdateBalanceDate"] = datetime.datetime.now()
     Data = Data[sorted(Data.columns)]
 
-    Data.loc[(Data["KYC_Status"] == '0') | (Data["KYC_Status"] == '0.0') | (Data["KYC_Status"] == 0), "KYC_Status"] = 'Anonyme'
-    Data.loc[(Data["KYC_Status"] == '1') | (Data["KYC_Status"] == '1.0') | (Data["KYC_Status"] == 1), "KYC_Status"] = 'SDD'
-    Data.loc[(Data["KYC_Status"] == '2') | (Data["KYC_Status"] == '2.0') | (Data["KYC_Status"] == 2), "KYC_Status"] = 'KYC'
-    Data.loc[(Data["KYC_Status"] == '3') | (Data["KYC_Status"] == '3.0') | (Data["KYC_Status"] == 3), "KYC_Status"] = 'KYC LITE'
+    Data.loc[(Data["KYC_Status"] == '0') | (Data["KYC_Status"] == '0.0') | (
+            Data["KYC_Status"] == 0), "KYC_Status"] = 'Anonyme'
+    Data.loc[(Data["KYC_Status"] == '1') | (Data["KYC_Status"] == '1.0') | (
+            Data["KYC_Status"] == 1), "KYC_Status"] = 'SDD'
+    Data.loc[(Data["KYC_Status"] == '2') | (Data["KYC_Status"] == '2.0') | (
+            Data["KYC_Status"] == 2), "KYC_Status"] = 'KYC'
+    Data.loc[(Data["KYC_Status"] == '3') | (Data["KYC_Status"] == '3.0') | (
+            Data["KYC_Status"] == 3), "KYC_Status"] = 'KYC LITE'
 
     Data["DistributorCode"] = Data["DistributorCode"].fillna(-1)
     Data["DistributorCode"] = Data["DistributorCode"].astype(int)
 
+    Data["CardHolderID"] = Data["CardHolderID"].astype(str)
+    Data["KYC_Status"] = Data["KYC_Status"].astype(str)
+    Data["CardStatus"] = Data["CardStatus"].astype(str)
 
+    Data.loc[Data["DistributorCode"].isin(["203", "914", "915"]), "IsRenewal"] = 1
 
     return Data
