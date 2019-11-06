@@ -215,46 +215,14 @@ def daily_card_status2(Data, filepath, **kwargs):
     database_type = "Postgres"
     database_name = "Creacard_Calypso"
 
-    DropTable = True
-
-    #
-
-    # 1 - Create the table
-
-    # Variables type in postgres
-    if TableParameter is not None:
-        try:
-            # Check if the table exist
-            if not db.table_exists(engine, TlbName, schema):
-                db.CreateTable(engine, TlbName, schema, TableParameter)
-            else:
-                if DropTable:
-                    metadata = MetaData()
-                    TlbObject = Table(TlbName, metadata, schema=schema)
-                    TlbObject.drop(engine)
-                    db.CreateTable(engine, TlbName, schema, TableParameter)
-        except Exception as e:
-            if logger is not None:
-                logger.error(e, exc_info=True)
-            else:
-                print(e)
-    else:
-        TableParameter = CreateDictionnaryType(Data)
-        try:
-            # Check if the table exist
-            if not db.table_exists(engine, TlbName, schema):
-                db.CreateTable(engine, TlbName, schema, TableParameter)
-            else:
-                if DropTable:
-                    metadata = MetaData()
-                    TlbObject = Table(TlbName, metadata, schema=schema)
-                    TlbObject.drop(engine)
-                    db.CreateTable(engine, TlbName, schema, TableParameter)
-        except Exception as e:
-            if logger is not None:
-                logger.error(e, exc_info=True)
-            else:
-                print(e)
+    query_delete = """
+    
+    delete from "CARD_STATUS"."STATUS_CARTES"
+    
+    """
+    tic = time.time()
+    engine.execute(query_delete)
+    print("delete took the data {} seconds".format(time.time() - tic))
 
     engine.close()
 
