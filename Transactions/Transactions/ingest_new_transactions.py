@@ -38,7 +38,7 @@ def add_new_pos_transactions(database_type, database_name, _year, _month, _day, 
                         "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                         CASE WHEN "TransactionTP" in ('POS International') then 1 
                         else 0
-                        end as "IsPOSInternational",
+                        end as "IsPOSInternational","TransactionTP",
                         '' as "UNIVERS", '' as "SOUS_UNIVERS"
                         FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                         where "TransactionTP" IN ('POS International','POS Domestic') 
@@ -131,7 +131,7 @@ def add_new_atm_transactions(database_type, database_name, _year, _month, _day, 
                     "CardVPUType", "MerchantAddress", "MerchantCity", "MerchantCountry", "MerchantID", "TransactionID",
                     CASE WHEN "TransactionTP" in ('ATM International') then 1
                     else 0
-                    end as "IsInternational"
+                    end as "IsInternational","TransactionTP"
                     FROM "TRANSACTIONS_MONTHLY"."MONTHLY_TRANSACTIONS_{}"
                     where "TransactionTP" IN ('ATM Domestic','ATM International') 
                     and "DebitCredit" IN ('Debit') 
@@ -299,7 +299,7 @@ def add_fees_others_transactions(database_type, database_name, _year, _month, _d
         query = """
            insert into "{}"."{}"
            {}
-           """.format(_schema,_tlbname, querytmp)
+           """.format(_schema, _tlbname, querytmp)
 
         engine.execute(query)
 
