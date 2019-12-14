@@ -4,18 +4,18 @@ import time
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 
 
-def create_no_mobile():
+def create_no_mobile(schema):
 
     query = """
     
-    CREATE TABLE "CUSTOMERS"."ID_MOBILE"(
+    CREATE TABLE "{}"."ID_MOBILE"(
     
         "MOBILE_ID" SERIAL,
         "NoMobile" TEXT,
         "NUM_CARTES" INTEGER
     )
     
-    """
+    """.format(schema)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
@@ -25,10 +25,10 @@ def create_no_mobile():
     query = """
     
     select "NoMobile", count(*) as "NUM_CARTES"
-    from "CUSTOMERS"."TMP_USER_ID"
+    from "{}"."TMP_USER_ID"
     group by "NoMobile"
     
-    """
+    """.format(schema)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
 
@@ -47,13 +47,13 @@ def create_no_mobile():
     query = """
     
     
-    UPDATE "CUSTOMERS"."MASTER_ID" 
+    UPDATE "{}"."MASTER_ID" 
     SET "MOBILE_ID" = T1."MOBILE_ID"
-    from "CUSTOMERS"."ID_MOBILE" as T1
-    where "CUSTOMERS"."MASTER_ID"."NoMobile" = T1."NoMobile"
+    from "{}"."ID_MOBILE" as T1
+    where "{}"."MASTER_ID"."NoMobile" = T1."NoMobile"
     
     
-    """
+    """.format(schema, schema, schema)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)

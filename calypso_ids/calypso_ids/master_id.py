@@ -4,15 +4,15 @@ import time
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 
 
-def create_master_id():
+def create_master_id(schema):
 
     query = """
     
-    CREATE TABLE "CUSTOMERS"."MASTER_ID" as 
+    CREATE TABLE "{}"."MASTER_ID" as 
     select *, null as "MOBILE_ID", null as "USER_ID", null as "CONTACT_ID"
-    from "CUSTOMERS"."TMP_USER_ID"
+    from "{}"."TMP_USER_ID"
     
-    """
+    """.format(schema,schema)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)

@@ -7,7 +7,7 @@ import os
 import json
 
 
-def create_tmp_id(schema, tlb):
+def create_tmp_id(schema, tlb, schema_main):
 
     if sys.platform == "win32":
         folder_json = os.path.expanduser('~') + "\\conf_python\\unique_id_conditions.json"
@@ -59,7 +59,7 @@ def create_tmp_id(schema, tlb):
     query = """
     
     
-    CREATE TABLE "CUSTOMERS"."TMP_USER_ID"(
+    CREATE TABLE "{}"."TMP_USER_ID"(
     
         "CardHolderID" VARCHAR(50),
         "NoMobile" TEXT,
@@ -74,7 +74,7 @@ def create_tmp_id(schema, tlb):
         "GoodCombinaison" INTEGER
     )
     
-    """
+    """.format(schema_main)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
@@ -82,7 +82,7 @@ def create_tmp_id(schema, tlb):
 
     data = data[~data["NoMobile"].isnull()]
 
-    InsertTableIntoDatabase(data, TlbName="TMP_USER_ID", Schema='CUSTOMERS',
+    InsertTableIntoDatabase(data, TlbName="TMP_USER_ID", Schema=schema_main,
                             database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
