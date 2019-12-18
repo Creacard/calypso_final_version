@@ -23,7 +23,8 @@ def create_tmp_id(schema, tlb, schema_main):
 
     query = """
 
-      select "CardHolderID", "NoMobile", lower("Email") as "Email", "FirstName", "LastName", "BirthDate", "PostCode", "Address1", "Address2"
+      select "CardHolderID", "NoMobile", lower("Email") as "Email", "FirstName", "LastName", "BirthDate", "PostCode", "Address1", "Address2",
+      "ActivationDate"
       from "{}"."{}"
       where {}
 
@@ -70,6 +71,7 @@ def create_tmp_id(schema, tlb, schema_main):
         "PostCode" TEXT,
         "Address1" TEXT, 
         "Address2" TEXT,
+        "ActivationDate" timestamp without time zone,
         "GoodEmail" INTEGER,
         "GoodCombinaison" INTEGER
     )
