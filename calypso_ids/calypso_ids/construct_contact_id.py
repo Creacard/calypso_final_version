@@ -55,7 +55,7 @@ def generate_contact_id_construction(schema):
     query = """
     
     update "CUSTOMERS"."MASTER_ID"
-    set "CONTACT_ID" = concat("USER_ID", "MOBILE_ID")
+    set "CONTACT_ID" = concat("USER_ID",'_',"MOBILE_ID")
     where "GoodCombinaison" = 0 and "CONTACT_ID" is null 
     
     """
