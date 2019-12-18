@@ -5,6 +5,7 @@ from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 import sys
 import os
 import json
+from Postgres_Toolsbox.DbTools import CreateSchema
 
 
 def create_tmp_id(schema, tlb, schema_main):
@@ -20,6 +21,8 @@ def create_tmp_id(schema, tlb, schema_main):
     condition_on_email = conditions["condition_email"]["dataframe"]
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
+
+    CreateSchema(engine, schema_main)
 
     query = """
 
