@@ -2,7 +2,6 @@ import pandas as pd
 from creacard_connectors.database_connector import connect_to_database
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 
-schema = "CUSTOMERS"
 
 def generate_contact_id_construction(schema):
 
