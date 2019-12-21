@@ -55,7 +55,7 @@ def generate_person_id_construction(schema):
     
     update "CUSTOMERS"."MASTER_ID"
     set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
-    where "GoodCombinaison" = 0 and "CONTACT_ID" is null 
+    where "GoodCombinaison" = 0 and "PERSON_ID" is null 
     
     """
 
