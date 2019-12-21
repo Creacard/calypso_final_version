@@ -20,7 +20,7 @@ def generate_person_id_construction(schema):
     
     CREATE TABLE "{}"."ID_PERSON"(
     
-        "CONTACT_ID" SERIAL,
+        "PERSON_ID" SERIAL,
         "combinaison" TEXT
     )
     
