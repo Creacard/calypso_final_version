@@ -9,10 +9,10 @@ def create_master_id(schema):
     query = """
     
     CREATE TABLE "{}"."MASTER_ID" as 
-    select *, null as "MOBILE_ID", null as "USER_ID", null as "CONTACT_ID"
+    select *, null as "MOBILE_ID", null as "USER_ID", null as "CONTACT_ID", null as "PERSON_ID",  null as "MOVIDON_ID"
     from "{}"."TMP_USER_ID"
     
-    """.format(schema,schema)
+    """.format(schema, schema)
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)

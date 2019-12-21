@@ -3,7 +3,7 @@ from creacard_connectors.database_connector import connect_to_database
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 
 
-def generate_contact_id_construction(schema):
+def generate_person_id_construction(schema):
 
     # create date ID
     query = """
@@ -18,7 +18,7 @@ def generate_contact_id_construction(schema):
 
     query = """
     
-    CREATE TABLE "{}"."ID_CONTACT"(
+    CREATE TABLE "{}"."ID_PERSON"(
     
         "CONTACT_ID" SERIAL,
         "combinaison" TEXT
@@ -31,7 +31,7 @@ def generate_contact_id_construction(schema):
     engine.close()
 
 
-    InsertTableIntoDatabase(data, TlbName="ID_CONTACT", Schema=schema,
+    InsertTableIntoDatabase(data, TlbName="ID_PERSON", Schema=schema,
                             database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
@@ -41,8 +41,8 @@ def generate_contact_id_construction(schema):
     query = """
     
     update "CUSTOMERS"."MASTER_ID"
-    set "CONTACT_ID" = T1."CONTACT_ID"
-    from "CUSTOMERS"."ID_CONTACT" as T1
+    set "PERSON_ID" = T1."PERSON_ID"
+    from "CUSTOMERS"."ID_PERSON" as T1
     where concat("CUSTOMERS"."MASTER_ID"."BirthDate", "CUSTOMERS"."MASTER_ID"."LastName") = T1."combinaison"
     
     """
@@ -54,7 +54,7 @@ def generate_contact_id_construction(schema):
     query = """
     
     update "CUSTOMERS"."MASTER_ID"
-    set "CONTACT_ID" = concat("USER_ID",'_',"MOBILE_ID")
+    set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
     where "GoodCombinaison" = 0 and "CONTACT_ID" is null 
     
     """
