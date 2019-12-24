@@ -50,6 +50,18 @@ def create_tmp_id(schema, tlb, schema_main):
     data.loc[(data["LastName"].str.contains(conditions["condition_combinaison"]["LastName"], regex=True)) |
              (data["BirthDate"].isnull()) | (data["BirthDate"].isin(conditions["condition_combinaison"]["BirthDate"].split(","))), "GoodCombinaison"] = 0
 
+    # Delete leading "00" at the start of string.
+
+    data["NoMobile"] = data["NoMobile"].str.replace("^00", "", regex=True)
+
+    # replace .0 at the end$
+
+    data["NoMobile"] = data["NoMobile"].str.replace("\.0$", "", regex=True)
+
+    # delete only literal '|' from string
+
+    data["NoMobile"] = data["NoMobile"].str.replace("\|", "", regex=True)
+
     query = """
  
     DROP TABLE IF EXISTS "CUSTOMERS"."TMP_USER_ID" CASCADE
