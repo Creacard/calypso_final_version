@@ -8,6 +8,8 @@ import json
 from Postgres_Toolsbox.DbTools import CreateSchema
 import numpy as np
 
+
+
 def calypso_ids_production(schema_main):
 
     if sys.platform == "win32":
@@ -20,40 +22,39 @@ def calypso_ids_production(schema_main):
     condition = conditions["exclusion_cartes"]["request"]
     condition_on_email = conditions["condition_email"]["dataframe"]
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
 
     query = """
-    
-    select T1."CardHolderID", T1."NoMobile", lower(T1."Email") as "Email", 
+
+    select T1."CardHolderID", T1."NoMobile", lower(T1."Email") as "Email",
     T1."FirstName", T1."LastName", T1."BirthDate", T1."PostCode", T1."Address1", T1."Address2",
     T1."ActivationDate"
     from "CARD_STATUS"."STATUS_CARTES" as T1
     left join "CUSTOMERS"."MASTER_ID" as T2
     on T1."CardHolderID" = T2."CardHolderID"
-    where (T1."NoMobile" is not null) and (T1."Email" !~* '.*creacard.*|.*prepaidfinancial.*|.*financial.*') 
-    and T2."USER_ID" is null 
-    
+    where (T1."NoMobile" is not null) and (T1."Email" !~* '.*creacard.*|.*prepaidfinancial.*|.*financial.*')
+    and T2."USER_ID" is null
+
     UNION ALL
-    
-    
-    select T1."CardHolderID", T1."NoMobile", lower(T1."Email") as "Email", 
+
+
+    select T1."CardHolderID", T1."NoMobile", lower(T1."Email") as "Email",
     T1."FirstName", T1."LastName", T1."BirthDate", T1."PostCode", T1."Address1", T1."Address2",
     T1."ActivationDate"
     from "CARD_STATUS"."STATUS_CARTES" as T1
     Join(
-        select "CardHolderID"
-        from "CARD_STATUS"."CHANGE_CUSTOMERS_CARTES"
-        where "dt_change" > '2019-12-21' and 
-        ("Is_ch_BirthDate" = 1 or "Is_ch_Email" = 1 or "Is_ch_LastName" = 1 or "Is_ch_NoMobile" = 1)
+    	select "CardHolderID"
+    	from "CARD_STATUS"."CHANGE_CUSTOMERS_CARTES"
+    	where "dt_change" > '2019-12-21' and
+    	("Is_ch_BirthDate" = 1 or "Is_ch_Email" = 1 or "Is_ch_LastName" = 1 or "Is_ch_NoMobile" = 1)
     ) as T2
     on T1."CardHolderID" = T2."CardHolderID"
-    
+
     """
 
     data = pd.read_sql(query, con=engine)
 
     engine.close()
-
 
     for var in ["FirstName", "LastName", "Address1", "Address2", "PostCode", "Email"]:
         data[var] = data[var].str.encode('utf-8').astype(str)
@@ -83,20 +84,20 @@ def calypso_ids_production(schema_main):
     data["NoMobile"] = data["NoMobile"].str.replace("\|", "", regex=True)
 
     query = """
-    
+
     DROP TABLE IF EXISTS "CUSTOMERS"."TMP_USER_ID" CASCADE
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
     query = """
-    
-    
+
+
     CREATE TABLE "{}"."TMP_USER_ID"(
-    
+
         "CardHolderID" VARCHAR(50),
         "NoMobile" TEXT,
         "Email" TEXT,
@@ -104,21 +105,21 @@ def calypso_ids_production(schema_main):
         "LastName" TEXT,
         "BirthDate" TEXT,
         "PostCode" TEXT,
-        "Address1" TEXT, 
+        "Address1" TEXT,
         "Address2" TEXT,
         "ActivationDate" timestamp without time zone,
         "GoodEmail" INTEGER,
         "GoodCombinaison" INTEGER,
-        "MOBILE_ID" INTEGER, 
-        "USER_ID" INTEGER, 
+        "MOBILE_ID" INTEGER,
+        "USER_ID" INTEGER,
         "CONTACT_ID" VARCHAR(50),
         "PERSON_ID" INTEGER,
         "MOVIDON_ID" INTEGER
     )
-    
+
     """.format(schema_main)
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
@@ -130,39 +131,33 @@ def calypso_ids_production(schema_main):
     data["MOVIDON_ID"] = None
 
     InsertTableIntoDatabase(data, TlbName="TMP_USER_ID", Schema=schema_main,
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
 
-
-
-
     # handle mobile_id
 
     query = """
-    
-    
+
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "MOBILE_ID" = T1."MOBILE_ID"
     from "CUSTOMERS"."ID_MOBILE" as T1
-    where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile" 
-    
+    where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
 
-
-
-
     query = """
-    
+
     select "NoMobile", count(*) as "NUM_CARTES"
-    from "CUSTOMERS"."TMP_USER_ID" 
-    where "MOBILE_ID" is null 
+    from "CUSTOMERS"."TMP_USER_ID"
+    where "MOBILE_ID" is null
     group by "NoMobile"
-    
+
     """
 
     data = pd.read_sql(query, con=engine)
@@ -170,26 +165,24 @@ def calypso_ids_production(schema_main):
     engine.close()
 
     InsertTableIntoDatabase(data, TlbName="ID_MOBILE", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "MOBILE_ID" = T1."MOBILE_ID"
     from "CUSTOMERS"."ID_MOBILE" as T1
-    where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile" and "CUSTOMERS"."TMP_USER_ID"."MOBILE_ID" is null 
-    
-    
+    where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile" and "CUSTOMERS"."TMP_USER_ID"."MOBILE_ID" is null
+
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
-
 
     # contact ID
 
@@ -198,38 +191,33 @@ def calypso_ids_production(schema_main):
     set "CONTACT_ID" = "CardHolderID"
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
-
-
-
 
     # Person ID
 
     query = """
-    
-    
+
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "PERSON_ID" = T1."PERSON_ID"
     from "CUSTOMERS"."ID_PERSON" as T1
     where concat("CUSTOMERS"."TMP_USER_ID"."BirthDate", "CUSTOMERS"."TMP_USER_ID"."LastName") = T1."combinaison"
     and "CUSTOMERS"."TMP_USER_ID"."GoodCombinaison" = 1
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
 
-
-
     query = """
-    
+
     select distinct concat("BirthDate", "LastName") as "combinaison"
-    from "CUSTOMERS"."TMP_USER_ID" 
+    from "CUSTOMERS"."TMP_USER_ID"
     where "PERSON_ID" is null and "GoodCombinaison" = 1
-    
-    
+
+
     """
 
     data = pd.read_sql(query, con=engine)
@@ -237,99 +225,92 @@ def calypso_ids_production(schema_main):
     engine.close()
 
     InsertTableIntoDatabase(data, TlbName="ID_PERSON", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "PERSON_ID" = T1."PERSON_ID"
     from "CUSTOMERS"."ID_PERSON" as T1
     where concat("CUSTOMERS"."TMP_USER_ID"."BirthDate", "CUSTOMERS"."TMP_USER_ID"."LastName") = T1."combinaison"
     and "CUSTOMERS"."TMP_USER_ID"."GoodCombinaison" = 1 and "CUSTOMERS"."TMP_USER_ID"."PERSON_ID" is null
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
-
 
     # User ID
 
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
-    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and 
-    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null 
-    
+    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and
+    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where concat("CUSTOMERS"."TMP_USER_ID"."BirthDate", "CUSTOMERS"."TMP_USER_ID"."LastName") = T1."combinaison"
     and "CUSTOMERS"."TMP_USER_ID"."GoodCombinaison" = 1 and "CUSTOMERS"."TMP_USER_ID"."CONTACT_ID" is null
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     ########
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
 
     query = """
-    
+
     select *
     from "CUSTOMERS"."TMP_USER_ID"
-    
-    
+
+
     """
 
     data = pd.read_sql(query, con=engine)
 
     query = """
-    
+
     select *
     from "CUSTOMERS"."MASTER_ID"
     where "USER_ID"::INTEGER in (select distinct "USER_ID" from "CUSTOMERS"."TMP_USER_ID" where "USER_ID" is not null)
-    
-    
+
+
     """
 
-
-    data_bis= pd.read_sql(query, con=engine)
+    data_bis = pd.read_sql(query, con=engine)
     data_bis["USER_ID"] = data_bis["USER_ID"].astype(float)
 
     data = pd.concat([data, data_bis], axis=0)
@@ -337,12 +318,7 @@ def calypso_ids_production(schema_main):
 
     user_id = data[["NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"]]
 
-
-
     user_id = user_id[user_id.duplicated(keep='last')]
-
-
-
 
     tic = time.time()
     sorted = False
@@ -384,210 +360,190 @@ def calypso_ids_production(schema_main):
 
     toc = time.time() - tic
 
-
     query = """
-    
+
     DROP TABLE IF EXISTS "CUSTOMERS"."TMP_ID_USER" CASCADE
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
-
 
     query = """
-    
-    
+
+
     CREATE TABLE "CUSTOMERS"."TMP_ID_USER"(
-    
-        "NoMobile" TEXT,
-        "Email" TEXT,
-        "combinaison" TEXT,
-        "GoodCombinaison" INTEGER,
-        "GoodEmail" INTEGER,
-        "USER_ID" INTEGER
+
+    	"NoMobile" TEXT,
+    	"Email" TEXT,
+    	"combinaison" TEXT,
+    	"GoodCombinaison" INTEGER,
+    	"GoodEmail" INTEGER,
+    	"USER_ID" INTEGER
     )
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
-
 
     InsertTableIntoDatabase(user_id[~user_id["USER_ID"].isnull()], TlbName="TMP_ID_USER", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
-
 
     ###
 
     query = """
-    
+
     select T1.*
     from "CUSTOMERS"."TMP_ID_USER" as T1
-    left join(	
-        select *, 1 as "is_exist"
-        from "CUSTOMERS"."ID_USER"
-        ) as T2
-    On T1."NoMobile" = T2."NoMobile" and 
-    T1."Email" = T2."Email" and 
-    T1."GoodEmail" = T2."GoodEmail" and 
-    T1."GoodCombinaison" = T2."GoodCombinaison" and 
+    left join(
+    	select *, 1 as "is_exist"
+    	from "CUSTOMERS"."ID_USER"
+    	) as T2
+    On T1."NoMobile" = T2."NoMobile" and
+    T1."Email" = T2."Email" and
+    T1."GoodEmail" = T2."GoodEmail" and
+    T1."GoodCombinaison" = T2."GoodCombinaison" and
     T1."combinaison" = T2."combinaison"
     where  T2."is_exist" is null
-    
+
     """
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     data = pd.read_sql(query, con=engine)
     engine.close()
 
-
     InsertTableIntoDatabase(data, TlbName="ID_USER", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
 
-
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
-    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and 
-    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null 
-    
+    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and
+    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where concat("CUSTOMERS"."TMP_USER_ID"."BirthDate", "CUSTOMERS"."TMP_USER_ID"."LastName") = T1."combinaison"
     and "CUSTOMERS"."TMP_USER_ID"."GoodCombinaison" = 1 and "CUSTOMERS"."TMP_USER_ID"."CONTACT_ID" is null
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     query = """
-    
+
     select *, concat("BirthDate", "LastName") as "combinaison"
     from "CUSTOMERS"."TMP_USER_ID"
-    where "USER_ID" is null 
-    
+    where "USER_ID" is null
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     data = pd.read_sql(query, con=engine)
     engine.close()
 
-
     query_max = """
-    
+
     select max("USER_ID") as max_user_id
     from "CUSTOMERS"."ID_USER"
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     data_max = pd.read_sql(query_max, con=engine)
     engine.close()
 
-
     from calypso_ids.id_generator import compute_user_id
 
+    user_id = data[["NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"]]
 
-    user_id =  data[["NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"]]
-
-
-    user_id = compute_user_id(user_id, last_user_id = data_max.iloc[0,0])
+    user_id = compute_user_id(user_id, last_user_id=data_max.iloc[0, 0])
 
     InsertTableIntoDatabase(user_id, TlbName="ID_USER", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
+                            database_name="Creacard_Calypso",
                             database_type="Postgres",
                             DropTable=False,
                             InstertInParrell=False)
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
-    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and 
-    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null 
-    
+    where  "CUSTOMERS"."TMP_USER_ID"."Email" = T1."Email" and
+    "CUSTOMERS"."TMP_USER_ID"."USER_ID" is null
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     query = """
-    
+
     update "CUSTOMERS"."TMP_USER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where concat("CUSTOMERS"."TMP_USER_ID"."BirthDate", "CUSTOMERS"."TMP_USER_ID"."LastName") = T1."combinaison"
     and "CUSTOMERS"."TMP_USER_ID"."GoodCombinaison" = 1 and "CUSTOMERS"."TMP_USER_ID"."CONTACT_ID" is null
-    
+
     """
 
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
-
     query = """
-    
+
     update "CUSTOMERS"."MASTER_ID"
-    set "NoMobile" = T1."NoMobile" , 
+    set "NoMobile" = T1."NoMobile" ,
     "Email" = T1."Email",
     "GoodCombinaison" = T1."GoodCombinaison",
     "GoodEmail" = T1."GoodEmail",
@@ -595,66 +551,48 @@ def calypso_ids_production(schema_main):
     "CONTACT_ID" = T1."CONTACT_ID",
     "PERSON_ID" = T1."PERSON_ID"
     from (select distinct *
-        from "CUSTOMERS"."TMP_USER_ID") as T1
+    	from "CUSTOMERS"."TMP_USER_ID") as T1
     where "CUSTOMERS"."MASTER_ID"."CardHolderID" = T1."CardHolderID"
-    
-    """
 
-
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
-    engine.execute(query)
-    engine.close()
-
-
-    query = """
-    
-    select distinct T1.*
-    from "CUSTOMERS"."TMP_USER_ID" as T1
-    left join (
-    
-        select "CardHolderID", 1 as "is_exist"
-        from "CUSTOMERS"."MASTER_ID"
-    
-    ) as T2
-    on T1."CardHolderID" = T2."CardHolderID"
-    where "is_exist" is null 
-    
-    """
-
-    engine = connect_to_database("Postgres", "test_connecteur").CreateEngine()
-    data = pd.read_sql(query, con=engine)
-    engine.close()
-
-
-    InsertTableIntoDatabase(data, TlbName="MASTER_ID", Schema='CUSTOMERS',
-                            database_name="test_connecteur",
-                            database_type="Postgres",
-                            DropTable=False,
-                            InstertInParrell=False)
-
-    query = """
-    
-    update "CUSTOMERS"."MASTER_ID"
-    set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
-    where "GoodCombinaison" = 0 and "PERSON_ID" is null 
-    
     """
 
     engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
     engine.execute(query)
     engine.close()
 
+    query = """
 
+    select distinct T1.*
+    from "CUSTOMERS"."TMP_USER_ID" as T1
+    left join (
 
+    	select "CardHolderID", 1 as "is_exist"
+    	from "CUSTOMERS"."MASTER_ID"
 
+    ) as T2
+    on T1."CardHolderID" = T2."CardHolderID"
+    where "is_exist" is null
 
+    """
 
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
+    data = pd.read_sql(query, con=engine)
+    engine.close()
 
+    InsertTableIntoDatabase(data, TlbName="MASTER_ID", Schema='CUSTOMERS',
+                            database_name="Creacard_Calypso",
+                            database_type="Postgres",
+                            DropTable=False,
+                            InstertInParrell=False)
 
+    query = """
 
+    update "CUSTOMERS"."MASTER_ID"
+    set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
+    where "GoodCombinaison" = 0 and "PERSON_ID" is null
 
+    """
 
-
-
-
-
+    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
+    engine.execute(query)
+    engine.close()
