@@ -43,6 +43,8 @@ def create_tmp_id(schema, tlb, schema_main):
         data[var] = data[var].str.replace(" ", "")
         data[var] = data[var].str.lower()
 
+    data = data[~data["Email"].str.contains('.*creacard.*|.*prepaidfinancial.*|.*financial.*', regex=True)]
+
     data["GoodEmail"] = 1
     data.loc[data["Email"].str.contains(condition_on_email, regex=True), "GoodEmail"] = 0
 
