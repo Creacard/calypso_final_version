@@ -567,7 +567,7 @@ def calypso_ids_production(schema_main, connexion_postgres):
         where "GoodCombinaison" = 0 and "PERSON_ID" is null 
 
     """
-    engine = connect_to_database("Postgres", "Creacard_Calypso").CreateEngine()
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
     engine.close()
 
