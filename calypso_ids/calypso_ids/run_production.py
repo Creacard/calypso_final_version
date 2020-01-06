@@ -509,14 +509,11 @@ def calypso_ids_production(schema_main, connexion_postgres):
     engine.close()
 
     query = """
-
     update "CUSTOMERS"."MASTER_ID"
     set "USER_ID" = T1."USER_ID"
     from "CUSTOMERS"."ID_USER" as T1
     where"CUSTOMERS"."MASTER_ID"."USER_ID" is null and 
     "CUSTOMERS"."MASTER_ID"."NoMobile" = T1."NoMobile"
-
-
     """
 
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
