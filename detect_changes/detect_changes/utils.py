@@ -55,6 +55,16 @@ def transform_data(Data, filepath):
 
     Data["Date of Birth"] = pd.to_datetime(Data["Date of Birth"], format="%b %d %Y %I:%M%p", errors='coerce')
 
+    Data["NoMobile"] = Data["NoMobile"].str.replace("^00", "", regex=True)
+
+    # replace .0 at the end$
+
+    Data["NoMobile"] = Data["NoMobile"].str.replace("\.0$", "", regex=True)
+
+    # delete only literal '|' from string
+
+    Data["NoMobile"] = Data["NoMobile"].str.replace("\|", "", regex=True)
+
     colnames = ["CardHolderID", "Email", "FirstName", "LastName",
                 "BirthDate", "IBAN", "NoMobile", "Programme"]
 
