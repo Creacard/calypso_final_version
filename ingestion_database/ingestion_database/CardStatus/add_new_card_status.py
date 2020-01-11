@@ -181,6 +181,18 @@ def daily_card_status2(Data, filepath, **kwargs):
 
     Data = Data[sorted(Data.columns)]
 
+    # Delete leading "00" at the start of string.
+
+    Data["NoMobile"] = Data["NoMobile"].str.replace("^00", "", regex=True)
+
+    # replace .0 at the end$
+
+    Data["NoMobile"] = Data["NoMobile"].str.replace("\.0$", "", regex=True)
+
+    # delete only literal '|' from string
+
+    Data["NoMobile"] = Data["NoMobile"].str.replace("\|", "", regex=True)
+
     # Step 1: Identify
 
     data_new = Data[["CardHolderID", "CardStatus", "KYC_Status"]]
