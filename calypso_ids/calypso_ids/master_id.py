@@ -9,7 +9,7 @@ def create_master_id(schema):
     query = """
     
     CREATE TABLE "{}"."MASTER_ID" as 
-    select *, null as "MOBILE_ID", null as "USER_ID", null as "CONTACT_ID", null as "PERSON_ID",  null as "MOVIDON_ID"
+    select *, null::integer as "MOBILE_ID", null::integer as "USER_ID", null::integer as "CONTACT_ID", null::integer as "PERSON_ID",  null::integer as "MOVIDON_ID"
     from "{}"."TMP_USER_ID"
     
     """.format(schema, schema)
