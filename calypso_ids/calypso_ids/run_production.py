@@ -132,10 +132,10 @@ def calypso_ids_production(schema_main, connexion_postgres):
                "GoodEmail" INTEGER,
                "GoodCombinaison" INTEGER,
                "MOBILE_ID" INTEGER,
-               "USER_ID" INTEGER,
+               "USER_ID" BIGINT,
                "CONTACT_ID" VARCHAR(50),
-               "PERSON_ID" INTEGER,
-               "MOVIDON_ID" INTEGER
+               "PERSON_ID" TEXT,
+               "MOVIDON_ID" BIGINT
            )
 
            """.format(schema_main)
@@ -467,6 +467,9 @@ def calypso_ids_production(schema_main, connexion_postgres):
     data = pd.read_sql(query, con=engine)
     engine.close()
 
+    data["PERSON_ID"] = data["PERSON_ID"].astype(str)
+    data["PERSON_ID"] = data["PERSON_ID"].str.replace("\.0$", "", regex=True)
+
     InsertTableIntoDatabase(data, TlbName="MASTER_ID", Schema='CUSTOMERS',
                             database_name=connexion_postgres,
                             database_type="Postgres",
@@ -521,6 +524,9 @@ def calypso_ids_production(schema_main, connexion_postgres):
     data = data.drop(columns=["oth_user_id"], axis=1)
 
     data["dt_change"] = datetime.datetime.now() - datetime.timedelta(days=1)
+
+    data["PERSON_ID"] = data["PERSON_ID"].astype(str)
+    data["PERSON_ID"] = data["PERSON_ID"].str.replace("\.0$", "", regex=True)
 
     # insert these cards into the table that allows to track the change of ID
     # overtime
