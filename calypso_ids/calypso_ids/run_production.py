@@ -275,31 +275,6 @@ def calypso_ids_production(schema_main, connexion_postgres):
         engine.execute(query)
         engine.close()
 
-    # STEP 4 : handle new USER_ID
-
-    # STEP 4.1: identified cards that were already associated to a USER_ID
-    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
-    query = """
-
-    select T2.*
-    from "CUSTOMERS"."TMP_USER_ID" as T1
-    inner join "CUSTOMERS"."MASTER_ID" as T2
-    ON T1."CardHolderID" = T2."CardHolderID"
-
-    """
-
-    data = pd.read_sql(query, con=engine)
-
-    if not data.empty:
-        data["dt_change"] = datetime.datetime.now() - datetime.timedelta(days=1)
-
-        # insert these cards into the table that allows to track the change of ID
-        # overtime
-        InsertTableIntoDatabase(data, TlbName="CHANGE_IDS", Schema='CUSTOMERS',
-                                database_name=connexion_postgres,
-                                database_type="Postgres",
-                                DropTable=False,
-                                InstertInParrell=False)
 
     # STEP 4.2: identified cards that can be associated to a know USER_ID
     query = """
@@ -355,19 +330,6 @@ def calypso_ids_production(schema_main, connexion_postgres):
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
 
-    # STEP 4.3: delete cards already identified from MASTER_ID
-    query = """
-    delete from "CUSTOMERS"."MASTER_ID"
-    where "CardHolderID" in (select T1."CardHolderID"
-    from "CUSTOMERS"."TMP_USER_ID" as T1
-    inner join "CUSTOMERS"."MASTER_ID" as T2
-    ON T1."CardHolderID" = T2."CardHolderID")
-    """
-
-    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
-
-    engine.execute(query)
-    engine.close()
 
     # STEP 4.4: Extract all cards (new cards and cards that were already associated to a USER_ID)
     # in order to re-associate USER_ID based on the sorted algorithm in order to always
@@ -383,11 +345,13 @@ def calypso_ids_production(schema_main, connexion_postgres):
        """
 
     data = pd.read_sql(query, con=engine)
+    data["combinaison"] = data["BirthDate"] + data["LastName"]
+    data = data[["NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"]]
 
     query = """
 
-    select *
-    from "CUSTOMERS"."MASTER_ID"
+    select "NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"
+    from "CUSTOMERS"."ID_USER"
 
 
     """
@@ -396,10 +360,8 @@ def calypso_ids_production(schema_main, connexion_postgres):
     data_bis["USER_ID"] = data_bis["USER_ID"].astype(float)
 
     data = pd.concat([data, data_bis], axis=0)
-    data["combinaison"] = data["BirthDate"] + data["LastName"]
 
-    user_id = data[["NoMobile", "Email", "combinaison", "GoodEmail", "GoodCombinaison", "USER_ID"]]
-    user_id = user_id[~user_id.duplicated(keep='first')]
+    user_id = data[~data.duplicated(keep='first')]
 
     tic = time.time()
     sorted = False
@@ -478,6 +440,20 @@ def calypso_ids_production(schema_main, connexion_postgres):
 
     """
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
+    # STEP 5.1.1: delete cards already identified from MASTER_ID
+    query = """
+        delete from "CUSTOMERS"."MASTER_ID"
+        where "CardHolderID" in (select T1."CardHolderID"
+        from "CUSTOMERS"."TMP_USER_ID" as T1
+        inner join "CUSTOMERS"."MASTER_ID" as T2
+        ON T1."CardHolderID" = T2."CardHolderID")
+        """
+
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+
     engine.execute(query)
     engine.close()
 
