@@ -572,7 +572,7 @@ def calypso_ids_production(schema_main, connexion_postgres):
     query = """
           update "CUSTOMERS"."MASTER_ID"
           set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
-           where "GoodCombinaison" = 0 and "PERSON_ID" is null 
+           where "GoodCombinaison" = 0 and "PERSON_ID" = 'None'
     """
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
