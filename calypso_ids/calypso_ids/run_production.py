@@ -75,6 +75,7 @@ def calypso_ids_production(schema_main, connexion_postgres):
     # associtated new ids for identified cards
     if not data.empty:
 
+
         for var in ["FirstName", "LastName", "Address1", "Address2", "PostCode", "Email"]:
             data[var] = data[var].str.encode('utf-8').astype(str)
             data.loc[data[var].isnull(), var] = ""
@@ -275,6 +276,21 @@ def calypso_ids_production(schema_main, connexion_postgres):
         engine.execute(query)
         engine.close()
 
+    # step 4.1: make sur that we are keeping the max user id
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+
+    query = """
+
+    select max("USER_ID") as "user_id_max"
+    from "CUSTOMERS"."MASTER_ID"
+
+    """
+
+    id_max = pd.read_sql(query, con=engine)
+    id_max = int(id_max.loc[0, "user_id_max"])
+
+    engine.close()
+
 
     # STEP 4.2: identified cards that can be associated to a know USER_ID
     query = """
@@ -407,7 +423,6 @@ def calypso_ids_production(schema_main, connexion_postgres):
 
     # STEP 4.5: associate new user_id to cards that already haven't
     user_id = user_id[user_id["USER_ID"].isnull()]
-    id_max = int(tmp_use_id["USER_ID"].max())
     user_id = compute_user_id(user_id, last_user_id=id_max)
 
     # STEP 4.6: Replace all ID_USER table by the new ones
