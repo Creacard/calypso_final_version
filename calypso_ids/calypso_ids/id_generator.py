@@ -10,6 +10,7 @@ def compute_user_id(data, **kwargs):
 
     user_id = data.copy()
     id_user = pd.DataFrame(range(1, len(user_id) + 1))
+    user_id = user_id.reset_index(drop=True)
     user_id["USER_ID"] = id_user
 
     sorted = False
