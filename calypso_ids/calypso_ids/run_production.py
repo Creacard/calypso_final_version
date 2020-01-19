@@ -45,7 +45,7 @@ def calypso_ids_production(schema_main, connexion_postgres):
     T1."FirstName", T1."LastName", T1."BirthDate", T1."PostCode", T1."Address1", T1."Address2",
     T1."ActivationDate"
     from "CARD_STATUS"."STATUS_CARTES" as T1
-    left join "CUSTOMERS"."MASTER_ID" as T2
+    left join "{}"."MASTER_ID" as T2
     on T1."CardHolderID" = T2."CardHolderID"
     where (T1."NoMobile" is not null) and (T1."Email" !~* '.*creacard.*|.*prepaidfinancial.*|.*financial.*')
     and T2."USER_ID" is null
@@ -66,7 +66,7 @@ def calypso_ids_production(schema_main, connexion_postgres):
     ) as T2
     on T1."CardHolderID" = T2."CardHolderID"
 
-    """
+    """.format(schema_main)
 
     data = pd.read_sql(query, con=engine)
 
@@ -107,9 +107,9 @@ def calypso_ids_production(schema_main, connexion_postgres):
 
         query = """
 
-           DROP TABLE IF EXISTS "CUSTOMERS"."TMP_USER_ID" CASCADE
+           DROP TABLE IF EXISTS "{}"."TMP_USER_ID" CASCADE
 
-           """
+           """.format(schema_main)
 
         engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
         engine.execute(query)
@@ -163,12 +163,12 @@ def calypso_ids_production(schema_main, connexion_postgres):
         query = """
 
 
-           update "CUSTOMERS"."TMP_USER_ID"
+           update "{}"."TMP_USER_ID"
            set "MOBILE_ID" = T1."MOBILE_ID"
-           from "CUSTOMERS"."ID_MOBILE" as T1
-           where "CUSTOMERS"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
+           from "{}"."ID_MOBILE" as T1
+           where "{}"."TMP_USER_ID"."NoMobile" = T1."NoMobile"
 
-           """
+           """.format(schema_main, schema_main, schema_main)
 
         engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
         engine.execute(query)
@@ -558,21 +558,58 @@ def calypso_ids_production(schema_main, connexion_postgres):
     engine.execute(query)
     engine.close()
 
-    # STEP 5.5: associated person id for cards which haven't
-    query = """
-        update "CUSTOMERS"."MASTER_ID"
-        set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
-        where "GoodCombinaison" = 0 and "PERSON_ID" is null 
 
+    # step 5.5: make sure that all changes are taken into account
+    query = """
+    
+        update "CUSTOMERS"."ID_USER"
+    set "USER_ID" = T3."user_id_current"
+    from(
+        select distinct T1."USER_ID" as "user_id_change", 
+        T2."USER_ID" as "user_id_current"
+        from "CUSTOMERS"."CHANGE_IDS" as T1
+        inner join "CUSTOMERS"."MASTER_ID" as T2
+        on T1."CardHolderID" = T2."CardHolderID"
+        where T1."dt_change" >= date(now()-interval '1 days')
+        ) as T3
+    where "CUSTOMERS"."ID_USER"."USER_ID" = T3."user_id_change"
+        
+    
     """
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
     engine.close()
 
     query = """
-          update "CUSTOMERS"."MASTER_ID"
-          set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
-           where "GoodCombinaison" = 0 and "PERSON_ID" = 'None'
+
+    UPDATE "CUSTOMERS"."MASTER_ID"
+    SET "USER_ID" = NULL
+    """
+
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
+    query = """
+        update "CUSTOMERS"."MASTER_ID"
+        set "USER_ID" = T1."USER_ID"
+        from(
+        select distinct "NoMobile", "USER_ID"
+        from "CUSTOMERS"."ID_USER") as T1
+        where "CUSTOMERS"."MASTER_ID"."NoMobile" = T1."NoMobile"
+    """
+
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
+
+    # STEP 5.6: associated person id for cards which haven't
+    query = """
+        update "CUSTOMERS"."MASTER_ID"
+        set "PERSON_ID" = concat("USER_ID",'_',"MOBILE_ID")
+        where "GoodCombinaison" = 0
+
     """
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
