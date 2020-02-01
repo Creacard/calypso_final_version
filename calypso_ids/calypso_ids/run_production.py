@@ -559,7 +559,35 @@ def calypso_ids_production(schema_main, connexion_postgres):
     engine.close()
 
 
+
     # step 5.5: make sure that all changes are taken into account
+
+
+    query = """
+    
+    drop table if exists "CUSTOMERS"."TMP_CHANGES_IDS" cascade;
+
+    create table "CUSTOMERS"."TMP_CHANGES_IDS" as 
+    select T2.*, now() as "dt_change"
+    from(
+            select distinct T1."USER_ID" as "user_id_change", 
+            T2."USER_ID" as "user_id_current"
+            from "CUSTOMERS"."CHANGE_IDS" as T1
+            inner join "CUSTOMERS"."MASTER_ID" as T2
+            on T1."CardHolderID" = T2."CardHolderID"
+            where T1."dt_change" >= date(now()-interval '1 days')
+            ) as T3
+    inner join "CUSTOMERS"."MASTER_ID" as T2
+    on T2."USER_ID" = T3."user_id_change";
+    
+    
+    
+    """
+
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
     query = """
     
         update "CUSTOMERS"."ID_USER"
@@ -576,6 +604,30 @@ def calypso_ids_production(schema_main, connexion_postgres):
         
     
     """
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
+
+    query = """
+    
+    insert into "CUSTOMERS"."CHANGE_IDS"
+    select * from "CUSTOMERS"."TMP_CHANGES_IDS"
+    
+    
+    """
+
+    engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
+    engine.execute(query)
+    engine.close()
+
+    query = """
+
+    drop table if exists "CUSTOMERS"."TMP_CHANGES_IDS" cascade
+
+
+    """
+
     engine = connect_to_database("Postgres", connexion_postgres).CreateEngine()
     engine.execute(query)
     engine.close()
