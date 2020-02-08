@@ -3,9 +3,11 @@ from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 from Creacard_Utils.read_with_protocole import *
 
 def transform_data(Data, filepath):
+
     keepcol = ["CardHolderID", "Email", "FirstName",
                "LastName", "Date of Birth", "IBAN", "NoMobile",
-               "Programme"]
+               "Programme", "Address1", "Address2",
+               "PostCode","City"]
 
     #### Step 1: Extract the data from the file and keep ony updated data
     # extract filedate
@@ -65,15 +67,16 @@ def transform_data(Data, filepath):
 
     Data["NoMobile"] = Data["NoMobile"].str.replace("\|", "", regex=True)
 
-    colnames = ["CardHolderID", "Email", "FirstName", "LastName",
-                "BirthDate", "IBAN", "NoMobile", "Programme"]
-
-    Data.columns = colnames
+    Data.columns = ["CardHolderID", "Email", "FirstName", "LastName",
+                        "BirthDate", "IBAN", "NoMobile", "Programme", "Address1",
+                        "Address2", "PostCode", "City"]
 
     return Data
 
 
 def extract_changes_email(tmp_data, data_current, FileName):
+
+
     DateFile = pd.to_datetime(
         FileName.split("-")[1] + "-" + FileName.split("-")[2] + "-" + FileName.split("-")[3].replace(".csv", ""))
 
