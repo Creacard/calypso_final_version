@@ -234,3 +234,29 @@ def extract_change_address(data_current, tmp_data, Filename):
                             "Creacard_Calypso",
                             TableDict=TableParameter,
                             DropTable=False)
+
+
+def extract_change_card_status(tmp_data, data_current, Filename):
+
+    outer_join = data_current.merge(tmp_data, how='outer', indicator=True)
+    outer_join = outer_join[outer_join["_merge"] == "right_only"]
+
+    # set 2 : identify new cardholder ID
+    new_card_holder_id = set(outer_join["CardHolderID"].unique()).difference(data_current["CardHolderID"].unique())
+
+    ### set 3 : insert old values into changes table
+    data_to_change = data_current[data_current["CardHolderID"].isin(
+        set(outer_join.loc[~outer_join["CardHolderID"].isin(new_card_holder_id), "CardHolderID"]))]
+
+    DateFile = pd.to_datetime(
+        Filename.split("-")[1] + "-" + Filename.split("-")[2] + "-" + Filename.split("-")[3]) - datetime.timedelta(
+        days=1)
+
+    data_to_change["dt_change"] = DateFile
+
+    InsertTableIntoDatabase(data_to_change,
+                            "CHANGE_STATUS_CARTES",
+                            "CARD_STATUS",
+                            "Postgres",
+                            "Creacard_Calypso",
+                            DropTable=False)
