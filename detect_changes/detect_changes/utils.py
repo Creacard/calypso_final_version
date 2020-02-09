@@ -2,12 +2,12 @@ import datetime
 from Postgres_Toolsbox.Ingestion import InsertTableIntoDatabase
 from Creacard_Utils.read_with_protocole import *
 
-def transform_data(Data, filepath):
 
+def transform_data(Data, filepath):
     keepcol = ["CardHolderID", "Email", "FirstName",
                "LastName", "Date of Birth", "IBAN", "NoMobile",
                "Programme", "Address1", "Address2",
-               "PostCode","City"]
+               "PostCode", "City", "KYC Status", "Card Status"]
 
     #### Step 1: Extract the data from the file and keep ony updated data
     # extract filedate
@@ -68,8 +68,19 @@ def transform_data(Data, filepath):
     Data["NoMobile"] = Data["NoMobile"].str.replace("\|", "", regex=True)
 
     Data.columns = ["CardHolderID", "Email", "FirstName", "LastName",
-                        "BirthDate", "IBAN", "NoMobile", "Programme", "Address1",
-                        "Address2", "PostCode", "City"]
+                    "BirthDate", "IBAN", "NoMobile", "Programme", "Address1",
+                    "Address2", "PostCode", "City", "KYC_Status", "CardStatus"]
+
+    Data.loc[(Data["KYC_Status"] == '0') | (Data["KYC_Status"] == '0.0') | (
+            Data["KYC_Status"] == 0), "KYC_Status"] = 'Anonyme'
+    Data.loc[(Data["KYC_Status"] == '1') | (Data["KYC_Status"] == '1.0') | (
+            Data["KYC_Status"] == 1), "KYC_Status"] = 'SDD'
+    Data.loc[(Data["KYC_Status"] == '2') | (Data["KYC_Status"] == '2.0') | (
+            Data["KYC_Status"] == 2), "KYC_Status"] = 'KYC'
+    Data.loc[(Data["KYC_Status"] == '3') | (Data["KYC_Status"] == '3.0') | (
+            Data["KYC_Status"] == 3), "KYC_Status"] = 'KYC LITE'
+
+    Data["KYC_Status"] = Data["KYC_Status"].astype(str)
 
     return Data
 
