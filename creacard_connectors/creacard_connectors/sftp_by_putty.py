@@ -9,27 +9,68 @@ import time
 import os
 import re
 
+
 class extract_data_from_postgres(object):
 
     """SFTP extraction of data from postgreSQL query to remote sftp
 
-        Parameters
+        Requiered Parameters
         -----------
-        con_name: str
-            name of the sftp connection
+
         local_folder: str
             local existing folder where the .csv from postgres will be temporary copied
         local_filename: str
             local existing filename where the .csv from postgres will be temporary copied
         query: str
             PostgreSQL query to extract targeted data (input by user) Usualy a select query
-        sftp_file_folder: str
-            local folder
-        remote_sftp_folder: str
-            remote folder
-        logs_folder: str
-            logs to track
+        remote_folder: str
+            path to the sftp folder
+        postgres_con: str
+            name of the postgres connection (json conf)
+        sftp_con : str
+            name of the sftp connection (json conf)
 
+        Optional Parameters
+        -----------
+
+        use_compression: Boolean (True / False)
+            should the file be compressed - False by default
+        logs : logger object
+            logger object to track errors (in production) - None by default
+        rm_csv_file: Boolean (True / False)
+            Does the extracted file must be remove (after be sent by sftp) - False by default
+        file_delimiter: str
+            option that allows the user to choose the output csv file delimiter - ';' by default
+
+        Example
+        -----------
+
+        from Creacard_Utils import LogErrorFromInsert
+        from creacard_connectors.sftp_by_putty import extract_data_from_postgres
+
+        con_name = "kevin_server_sftp"
+        local_folder = "F:/FTP/test/"
+        local_filename = "card_status_test"
+        query = "select * from "TRANSACTIONS"."POS_TRANSACTIONS" limit 1000"
+
+        sftp_file_folder = "F:/FTP/test/"
+        remote_sftp_folder = "Desktop\Creacard"
+        logs_folder = "F:/LOGS/"
+        connexion_name = "Creacard_Calypso"
+
+
+        logger = LogErrorFromInsert.CreateLogger("from_postgres_to_sftp", "pos_trasactions_", logs_folder)
+
+        extraction = extract_data_from_postgres(local_folder=local_folder,
+                                                local_filename = local_filename,
+                                                query = query,
+                                                remote_sftp_folder = remote_sftp_folder,
+                                                remote_sftp_folder = connexion_name,
+                                                sftp_con = con_name,
+                                                use_compression = False,
+                                                logs = logger,
+                                                rm_csv_file = False,
+                                                file_delimiter = ";")
     """
 
     _local_folder = None
@@ -42,6 +83,7 @@ class extract_data_from_postgres(object):
     _local_path = None
     _loggin = None
     _rm_csv_file = None
+    _file_delimiter = None
 
     def __init__(self, local_folder, local_filename, query, remote_folder, postgres_con, sftp_con, **kwargs):
 
@@ -54,6 +96,7 @@ class extract_data_from_postgres(object):
         self._use_compression = kwargs.get('use_compression', False)
         self._loggin = kwargs.get('logs', None)
         self._rm_csv_file = kwargs.get('rm_csv_file', False)
+        self._file_delimiter = kwargs.get('file_delimiter', ';')
 
     def extract_csv_from_postgres(self):
 
@@ -61,7 +104,7 @@ class extract_data_from_postgres(object):
 
             self._local_path, self._local_filename = copy_to_csv(self._query, self._local_filename, self._local_folder,
                                                                  self._postgres_con, compression=self._use_compression,
-                                                                 remove_csv_file=self._rm_csv_file)
+                                                                 remove_csv_file=self._rm_csv_file, delimiter=self._file_delimiter)
 
         except Exception as e:
             print("An error occurred : {}".format(e))
@@ -81,7 +124,7 @@ class extract_data_from_postgres(object):
 
             self._local_path, self._local_filename = copy_to_csv(self._query, self._local_filename, self._local_folder,
                                                                  self._postgres_con, compression=self._use_compression,
-                                                                 remove_csv_file=self._rm_csv_file)
+                                                                 remove_csv_file=self._rm_csv_file, delimiter=self._file_delimiter)
 
             push_file_putty(self._local_filename, self._local_folder, self._remote_folder,
                             self._sftp_con, self._local_path, remove_file=_rm_sent_file)
@@ -102,6 +145,7 @@ def copy_to_csv(query, local_filename, local_folder, connexion_name, **kwargs):
 
     to_compress = kwargs.get('compression', False)
     _remove_csv_file = kwargs.get('remove_csv_file', False)
+    _delimiter =  kwargs.get('delimiter', ';')
 
     local_filename = local_filename + "_" + str(datetime.datetime.now())[0:10].replace("-", "").replace(":",
                                                                                                         "").replace(
@@ -114,9 +158,9 @@ def copy_to_csv(query, local_filename, local_folder, connexion_name, **kwargs):
 
     cmd = """
 
-    COPY ({}) TO '{}' WITH CSV HEADER;
+    COPY ({}) TO '{}' WITH CSV HEADER DELIMITER '{}';
 
-    """.format(query, local_path)
+    """.format(query, local_path, _delimiter)
 
     engine = connect_to_database("Postgres", connexion_name).CreateEngine()
 
