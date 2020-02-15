@@ -4,12 +4,20 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
-def EmailingAttachment(subject, pwd, Sender, Receiver, Body, PathToFile ,FileToAttach):
+def EmailingAttachment(subject, pwd, Sender, recipients, Body, PathToFile ,FileToAttach):
 
 
     msg = MIMEMultipart()
     msg['From'] = Sender
-    msg['To'] = Receiver
+
+
+    if len(recipients) > 1:
+        msg['To'] = ", ".join(recipients)
+    else:
+        msg['To'] = recipients[0]
+
+
+
     msg['Subject'] = subject
     body = Body
     msg.attach(MIMEText(body, 'plain'))
@@ -36,6 +44,6 @@ def EmailingAttachment(subject, pwd, Sender, Receiver, Body, PathToFile ,FileToA
     # Converts the Multipart msg into a string
     text = msg.as_string()
     # sending the mail
-    s.sendmail(Sender, Receiver, text)
+    s.sendmail(Sender, recipients, text)
     # terminating the session
     s.quit()
