@@ -65,12 +65,22 @@ class extract_data_from_postgres(object):
                                                 local_filename = local_filename,
                                                 query = query,
                                                 remote_sftp_folder = remote_sftp_folder,
-                                                remote_sftp_folder = connexion_name,
+                                                postgres_con = connexion_name,
                                                 sftp_con = con_name,
                                                 use_compression = False,
                                                 logs = logger,
                                                 rm_csv_file = False,
                                                 file_delimiter = ";")
+
+        extraction = extract_data_from_postgres(local_folder, local_filename, query, remote_sftp_folder,connexion_name,con_name,
+                                                use_compression = False,
+                                                logs = logger,
+                                                rm_csv_file = False,
+                                                file_delimiter = ";")
+
+        extraction.extract_csv_from_postgres()
+        extraction.push_file_sftp()
+
     """
 
     _local_folder = None
