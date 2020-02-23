@@ -36,7 +36,7 @@ def CreateDictionnaryType(Data, **kwargs):
         DataTypes.loc[DataTypes.Variables == i, "Type"] = "timestamp without time zone"
 
     for i in DataTypes.loc[DataTypes.Type == "object", "Variables"]:
-        if max(Data[i]) <= 20:
+        if max(Data[i].str.len()) <= 20:
             DataTypes.loc[DataTypes.Variables == i, "Type"] = "VARCHAR (40)"
         else:
             DataTypes.loc[DataTypes.Variables == i, "Type"] = "TEXT"
