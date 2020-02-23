@@ -11,7 +11,13 @@ import pandas as pd
 from Postgres_Toolsbox.DetectTypePostgres import CreateDictionnaryType
 from creacard_connectors.database_connector import connect_to_database
 from Creacard_Utils.read_with_protocole import read_csv_protocole
-import StringIO
+
+
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
+
 
 
 def table_exists(engine, TlbName, schema):
