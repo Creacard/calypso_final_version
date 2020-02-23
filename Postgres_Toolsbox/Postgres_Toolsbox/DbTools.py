@@ -313,7 +313,7 @@ def CreateTable(engine, TlbName, schema, TableParameter, **kwargs):
 
     if _keep_order:
         i = 1
-        for var, keys in TableParameter.iteritems():
+        for var, keys in TableParameter.items():
             if i == len(TableParameter):
                 ""
                 AddColumns = """
@@ -334,7 +334,7 @@ def CreateTable(engine, TlbName, schema, TableParameter, **kwargs):
             i = i + 1
     else:
         i = 1
-        for var, keys in sorted(TableParameter.iteritems()):
+        for var, keys in sorted(TableParameter.items()):
             if i == len(TableParameter):
                 AddColumns = """
     
