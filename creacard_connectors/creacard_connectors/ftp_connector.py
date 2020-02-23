@@ -2,9 +2,13 @@ from ftplib import FTP
 import pandas as pd
 import io
 from ftplib import FTP_TLS
-from StringIO import StringIO
 from Creacard_Utils.import_credentials import credentials_extractor
 from creacard_connectors.import_configurations import FTP_connection
+
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 
 
 class connect_to_FTP(object):
