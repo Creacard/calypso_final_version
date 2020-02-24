@@ -59,6 +59,8 @@ def ingest_csv_transactions(database_type, database_name, Schema, Folder, ingest
     logger = kwargs.get('logger')
     workers = kwargs.get('workers', 3)
     _file_date_condition = kwargs.get('file_date_condition', None)
+    ins_in_parallel = kwargs.get('insert_in_parallel', False)
+
 
     # Create the dictionnary in order to insure you
     # that at each ingestion of .csv file
@@ -178,7 +180,7 @@ def ingest_csv_transactions(database_type, database_name, Schema, Folder, ingest
                                                  logger=logger,
                                                  TableDict=TableParameter,
                                                  InsertInTheSameTable=True,
-                                                 InsertInParrell=True,
+                                                 InsertInParrell=ins_in_parallel,
                                                  PreprocessingCsv=FinalKeywords,
                                                  NumWorkers=workers)
 
