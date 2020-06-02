@@ -187,9 +187,15 @@ def create_sftp_connection(hostname, port, private_key, user, pwd):
 
 
 def parse_private_key(path_key):
-    key = pd.read_csv(path_key, header=None, sep=";")
-    keyfinal = """"""
-    for i in range(0, len(key)):
-        keyfinal = keyfinal + str(key.iloc[i, 0])
+
+    if path_key != "" :
+
+        key = pd.read_csv(path_key, header=None, sep=";")
+        keyfinal = """"""
+        for i in range(0, len(key)):
+            keyfinal = keyfinal + str(key.iloc[i, 0])
+
+    else:
+        keyfinal = None
 
     return keyfinal
